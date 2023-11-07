@@ -1,4 +1,5 @@
 using FloraEdu.Domain.Entities;
+using FloraEdu.Persistence.Configurations;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +15,8 @@ public class ApplicationDbContext : IdentityDbContext<User>
     {
         base.OnModelCreating(builder);
 
-        builder.Entity<User>().ToTable("Users");
+        builder.ApplyConfiguration(new UserConfiguration());
+        builder.ApplyConfiguration(new PlantConfiguration());
+        builder.ApplyConfiguration(new PlantCommentConfiguration());
     }
 }
