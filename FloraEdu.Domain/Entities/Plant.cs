@@ -4,9 +4,11 @@ namespace FloraEdu.Domain.Entities;
 
 public class Plant : BaseEntity
 {
-    public string Name { get; set; } = "";
-    public PlantType Type { get; set; }
-    public string Description { get; set; } = "";
-    public string Predispositions { get; set; } = "";
-    public string Maintenance { get; set; } = "";
+    public required string Name { get; set; }
+    public required PlantType Type { get; set; }
+    public string? Description { get; set; }
+    public string? Predispositions { get; set; }
+    public string? Planting { get; set; }
+    public string? Maintenance { get; set; }
+    public List<PlantComment> Comments { get; set; } = new();
 }
