@@ -2,6 +2,7 @@ using FloraEdu.Application.Authentication.Implementations;
 using FloraEdu.Application.Authentication.Interfaces;
 using FloraEdu.Domain.Entities;
 using FloraEdu.Persistence;
+using FloraEdu.Web.Middlewares;
 using FloraEdu.Web.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -15,7 +16,7 @@ var connectionString = config.GetConnectionString("DefaultConnection") ??
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(o => o.JsonSerializerOptions.PropertyNameCaseInsensitive = true);
 
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -49,6 +50,8 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseGlobalExceptionHandler();
 
 app.MapControllers();
 
