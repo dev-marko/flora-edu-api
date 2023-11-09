@@ -1,6 +1,6 @@
 using FloraEdu.Application.Authentication.Implementations;
 using FloraEdu.Application.Authentication.Interfaces;
-using FloraEdu.Domain.DataTransferObjects;
+using FloraEdu.Domain.DataTransferObjects.Plant;
 using FloraEdu.Domain.Entities;
 using FloraEdu.Domain.Validators;
 using FloraEdu.Persistence;
@@ -18,6 +18,8 @@ var connectionString = config.GetConnectionString("DefaultConnection") ??
                        throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
+
+builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddControllers().AddJsonOptions(o => o.JsonSerializerOptions.PropertyNameCaseInsensitive = true);
 
