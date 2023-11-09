@@ -1,4 +1,4 @@
-﻿using FloraEdu.Domain.DataTransferObjects;
+﻿using FloraEdu.Domain.DataTransferObjects.Plant;
 using FloraEdu.Domain.Enumerations;
 using FluentValidation;
 

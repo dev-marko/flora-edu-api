@@ -1,6 +1,6 @@
 ﻿using FloraEdu.Domain.Enumerations;
 
-namespace FloraEdu.Domain.DataTransferObjects;
+namespace FloraEdu.Domain.DataTransferObjects.Plant;
 
 public class PlantCreateOrUpdateDto
 {
