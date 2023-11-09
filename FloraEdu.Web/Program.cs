@@ -1,9 +1,12 @@
 using FloraEdu.Application.Authentication.Implementations;
 using FloraEdu.Application.Authentication.Interfaces;
+using FloraEdu.Domain.DataTransferObjects;
 using FloraEdu.Domain.Entities;
+using FloraEdu.Domain.Validators;
 using FloraEdu.Persistence;
 using FloraEdu.Web.Middlewares;
 using FloraEdu.Web.Options;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +32,9 @@ builder.Services.ConfigureOptions<JwtBearerOptionsSetup>();
 
 // Add services to the container.
 builder.Services.AddScoped<IJwtProvider, JwtProvider>();
+
+// Register validators
+builder.Services.AddScoped<IValidator<PlantCreateOrUpdateDto>, PlantDtoValidator>();
 
 builder.Services.AddTransient<IUserService, UserService>();
 
