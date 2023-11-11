@@ -10,5 +10,6 @@ public class Plant : BaseEntity
     public string? Predispositions { get; set; }
     public string? Planting { get; set; }
     public string? Maintenance { get; set; }
+    public PlantImage? PlantImage { get; set; }
     public List<PlantComment> Comments { get; set; } = new();
 }
