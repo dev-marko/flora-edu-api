@@ -23,5 +23,7 @@ public class ApplicationDbContext : IdentityDbContext<User>
         builder.ApplyConfiguration(new PlantConfiguration());
         builder.ApplyConfiguration(new PlantCommentConfiguration());
         builder.ApplyConfiguration(new PlantImageConfiguration());
+        builder.ApplyConfiguration(new ArticleConfiguration());
+        builder.ApplyConfiguration(new ArticleCommentConfiguration());
     }
 }
