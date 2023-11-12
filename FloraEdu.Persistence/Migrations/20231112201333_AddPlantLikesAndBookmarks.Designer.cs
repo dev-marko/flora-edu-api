@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using FloraEdu.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FloraEdu.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231112201333_AddPlantLikesAndBookmarks")]
+    partial class AddPlantLikesAndBookmarks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -69,7 +72,12 @@ namespace FloraEdu.Persistence.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Plants", (string)null);
                 });
@@ -382,19 +390,11 @@ namespace FloraEdu.Persistence.Migrations
                     b.ToTable("UserPlantLikes", (string)null);
                 });
 
-            modelBuilder.Entity("PlantUser1", b =>
+            modelBuilder.Entity("FloraEdu.Domain.Entities.Plant", b =>
                 {
-                    b.Property<Guid>("BookmarkedPlantsId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("BookmarksId")
-                        .HasColumnType("text");
-
-                    b.HasKey("BookmarkedPlantsId", "BookmarksId");
-
-                    b.HasIndex("BookmarksId");
-
-                    b.ToTable("UserPlantBookmarks", (string)null);
+                    b.HasOne("FloraEdu.Domain.Entities.User", null)
+                        .WithMany("BookmarkedPlants")
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("FloraEdu.Domain.Entities.PlantComment", b =>
@@ -493,26 +493,16 @@ namespace FloraEdu.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PlantUser1", b =>
-                {
-                    b.HasOne("FloraEdu.Domain.Entities.Plant", null)
-                        .WithMany()
-                        .HasForeignKey("BookmarkedPlantsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("FloraEdu.Domain.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("BookmarksId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("FloraEdu.Domain.Entities.Plant", b =>
                 {
                     b.Navigation("Comments");
 
                     b.Navigation("PlantImage");
+                });
+
+            modelBuilder.Entity("FloraEdu.Domain.Entities.User", b =>
+                {
+                    b.Navigation("BookmarkedPlants");
                 });
 #pragma warning restore 612, 618
         }
