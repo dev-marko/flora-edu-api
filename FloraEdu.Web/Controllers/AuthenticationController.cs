@@ -2,25 +2,19 @@
 using FloraEdu.Application.Authentication.Interfaces;
 using FloraEdu.Domain.Entities;
 using FloraEdu.Domain.Roles;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FloraEdu.Web.Controllers;
 
-[Route("api/authentication")]
 [ApiController]
+[Route("[controller]")]
 public class AuthenticationController : ControllerBase
 {
-    private readonly UserManager<User> _userManager;
-    private readonly SignInManager<User> _signInManager;
     private readonly IJwtProvider _jwtProvider;
     private readonly IUserService _userService;
 
-    public AuthenticationController(UserManager<User> userManager, SignInManager<User> signInManager,
-        IJwtProvider jwtProvider, IUserService userService)
+    public AuthenticationController(IJwtProvider jwtProvider, IUserService userService)
     {
-        _userManager = userManager;
-        _signInManager = signInManager;
         _jwtProvider = jwtProvider;
         _userService = userService;
     }
