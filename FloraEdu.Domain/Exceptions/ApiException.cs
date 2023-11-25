@@ -19,6 +19,10 @@ public static class ApiExceptionExtension
         { ErrorCodes.NotFound, HttpStatusCode.NotFound },
         { ErrorCodes.BadRequest, HttpStatusCode.BadRequest },
         { ErrorCodes.InternalServerError, HttpStatusCode.InternalServerError },
+        { ErrorCodes.OperationFailed, HttpStatusCode.InternalServerError },
+
+        { ErrorCodes.UserNotFound, HttpStatusCode.NotFound },
+        { ErrorCodes.PasswordMismatch, HttpStatusCode.BadRequest }
     };
 
     public static HttpStatusCode GetStatusCode(string errorMessage)
