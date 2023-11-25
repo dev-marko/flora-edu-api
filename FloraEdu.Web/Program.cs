@@ -17,6 +17,8 @@ var config = builder.Configuration;
 var connectionString = config.GetConnectionString("DefaultConnection") ??
                        throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
+builder.Services.AddCors();
+
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
 
 builder.Services.AddAutoMapper(typeof(Program));
@@ -52,6 +54,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors(o => o.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+
+app.UsePathBase(new PathString("/api"));
 
 app.UseHttpsRedirection();
 
