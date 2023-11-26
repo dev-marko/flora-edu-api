@@ -107,12 +107,9 @@ public class UserService : IUserService
 
     public async Task<IdentityResult?> AddToRoleAsync(User user, string role)
     {
-        if (await _roleManager.RoleExistsAsync(role))
-        {
-            return await _userManager.AddToRoleAsync(user, role);
-        }
-
-        return null;
+        if (!await _roleManager.RoleExistsAsync(role)) return null;
+        await _userManager.AddClaimAsync(user, new Claim(ClaimTypes.Role, role));
+        return await _userManager.AddToRoleAsync(user, role);
     }
 
     public async Task<IdentityResult> CreateRoleAsync(IdentityRole role)
