@@ -23,10 +23,6 @@ public class AuthenticationController : ControllerBase
     [Route("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto model)
     {
-        // TODO: Implement user already exists on frontend
-        if (await _userService.UserExists(model.Email))
-            // throw new ApiException(ApiErrorType.UserAlreadyExistsException, nameof(AuthenticateController));
-            throw new InvalidOperationException("User already exists");
         User user = new()
         {
             FirstName = model.FirstName,
@@ -37,7 +33,7 @@ public class AuthenticationController : ControllerBase
         };
 
         await _userService.CreateUserAsync(user, model.Password);
-        
+
         await _userService.AddToRoleAsync(user, Roles.RegularUser);
 
         return Ok(user);
@@ -54,8 +50,16 @@ public class AuthenticationController : ControllerBase
         var response = new
         {
             AccessToken = token,
-            UserId = user.Id
+            UserInfo = new
+            {
+                UserName = user.UserName,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                AvatarUrl = user.AvatarImageUrl
+            }
         };
+
         return Ok(response);
     }
 }
