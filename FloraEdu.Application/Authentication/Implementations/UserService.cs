@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.Net.Http.Json;
+using System.Security.Claims;
 using FloraEdu.Application.Authentication.Dtos;
 using FloraEdu.Application.Authentication.Dtos.Extensions;
 using FloraEdu.Application.Authentication.Interfaces;
@@ -95,8 +96,30 @@ public class UserService : IUserService
 
     public async Task<IdentityResult> CreateUserAsync(User user, string password)
     {
+        var userExists = user.UserName != null && await UserExists(user.UserName);
+
+        if (userExists) throw new ApiException("User already exists", ErrorCodes.UserExists);
+
+        string? nameToUseForAvatarInitials;
+
+        if (!string.IsNullOrEmpty(user.FirstName) && !string.IsNullOrEmpty(user.LastName))
+        {
+            nameToUseForAvatarInitials = string.Join('+', user.FirstName, user.LastName);
+        }
+        else
+        {
+            nameToUseForAvatarInitials = user.UserName;
+        }
+
+        var userAvatarImageUrl
+            = $"https://ui-avatars.com/api?background=random&rounded=true&name={nameToUseForAvatarInitials}";
+
+        user.AvatarImageUrl = userAvatarImageUrl;
+
         var result = await _userManager.CreateAsync(user, password);
+
         if (!result.Succeeded) throw new ApiException("CreateUser operation failed", ErrorCodes.OperationFailed);
+
         return result;
     }
 
