@@ -4,5 +4,5 @@ namespace FloraEdu.Application.Authentication.Interfaces;
 
 public interface IJwtProvider
 {
-    string GenerateJwt(User user);
+    Task<string> GenerateJwt(User user);
 }
