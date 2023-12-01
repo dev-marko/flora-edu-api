@@ -38,6 +38,8 @@ builder.Services.AddAuthentication(auth =>
 {
     auth.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
     auth.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    auth.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    auth.DefaultForbidScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer();
 
 builder.Services.ConfigureOptions<JwtOptionsSetup>();
