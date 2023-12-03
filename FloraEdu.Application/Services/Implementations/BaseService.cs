@@ -10,9 +10,9 @@ namespace FloraEdu.Application.Services.Implementations;
 public class BaseService<T> : IService<T> where T : BaseEntity
 {
     private readonly ApplicationDbContext _dbContext;
-    private readonly ILogger _logger;
+    private readonly ILogger<T> _logger;
 
-    public BaseService(ApplicationDbContext dbContext, ILogger logger)
+    public BaseService(ApplicationDbContext dbContext, ILogger<T> logger)
     {
         _dbContext = dbContext;
         _logger = logger;
@@ -26,9 +26,9 @@ public class BaseService<T> : IService<T> where T : BaseEntity
     public virtual async Task<T> GetById(Guid id)
     {
         var entity = await _dbContext.Set<T>().FindAsync(id);
-
+        
         if (entity is not null) return entity;
-
+        
         _logger.LogError("Entity with ID: {id} not found", id);
         throw new ApiException("Entity not found", ErrorCodes.NotFound);
     }
