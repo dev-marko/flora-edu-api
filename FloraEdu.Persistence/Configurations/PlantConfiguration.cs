@@ -11,5 +11,10 @@ public class PlantConfiguration : BaseEntityConfiguration<Plant>
         base.Configure(builder);
         
         builder.ToTable("Plants");
+
+        builder
+            .HasOne(p => p.Author)
+            .WithMany(a => a.AuthoredPlants)
+            .HasForeignKey("AuthorId");
     }
 }
