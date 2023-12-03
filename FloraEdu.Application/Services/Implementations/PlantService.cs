@@ -5,10 +5,7 @@ using FloraEdu.Domain.DataTransferObjects;
 using FloraEdu.Domain.DataTransferObjects.Plant;
 using FloraEdu.Domain.Entities;
 using FloraEdu.Domain.Enumerations;
-using FloraEdu.Domain.Exceptions;
 using FloraEdu.Persistence;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

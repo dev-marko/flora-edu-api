@@ -2,10 +2,8 @@
 using AutoMapper;
 using FloraEdu.Application.Authentication.Interfaces;
 using FloraEdu.Application.Services.Interfaces;
-using FloraEdu.Domain.Authorization;
 using FloraEdu.Domain.DataTransferObjects.Plant;
 using FloraEdu.Domain.Entities;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FloraEdu.Web.Controllers;

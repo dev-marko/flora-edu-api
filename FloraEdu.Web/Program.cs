@@ -1,17 +1,16 @@
-using System.Security.Claims;
 using FloraEdu.Application.Authentication.Implementations;
 using FloraEdu.Application.Authentication.Interfaces;
+using FloraEdu.Application.Services.Implementations;
+using FloraEdu.Application.Services.Interfaces;
 using FloraEdu.Domain.Authorization;
 using FloraEdu.Domain.DataTransferObjects.Plant;
 using FloraEdu.Domain.Entities;
-using FloraEdu.Domain.Enumerations;
 using FloraEdu.Domain.Validators;
 using FloraEdu.Persistence;
 using FloraEdu.Web.Middlewares;
 using FloraEdu.Web.Options;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -63,6 +62,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 // Add services to the container.
 builder.Services.AddScoped<IJwtProvider, JwtProvider>();
+builder.Services.AddScoped<IPlantService, PlantService>();
 
 // Register validators
 builder.Services.AddScoped<IValidator<PlantCreateOrUpdateDto>, PlantDtoValidator>();
