@@ -11,6 +11,7 @@ public class Plant : BaseEntity
     public string? Planting { get; set; }
     public string? Maintenance { get; set; }
     public PlantImage? PlantImage { get; set; }
+    public User? Author { get; set; }
     public List<PlantComment> Comments { get; set; } = new();
     public List<User> Likes { get; set; } = new();
     public List<User> Bookmarks { get; set; } = new();
