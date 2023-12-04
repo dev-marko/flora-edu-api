@@ -1,4 +1,4 @@
-﻿namespace FloraEdu.Domain.DataTransferObjects.Plant;
+﻿namespace FloraEdu.Domain.DataTransferObjects;
 
 public class AuthorDto : BaseDto
 {
