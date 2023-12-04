@@ -63,6 +63,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 // Add services to the container.
 builder.Services.AddScoped<IJwtProvider, JwtProvider>();
 builder.Services.AddScoped<IPlantService, PlantService>();
+builder.Services.AddScoped<IBlogService, BlogService>();
 
 // Register validators
 builder.Services.AddScoped<IValidator<PlantCreateOrUpdateDto>, PlantDtoValidator>();
