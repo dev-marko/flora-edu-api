@@ -14,10 +14,20 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMany(user => user.LikedPlants)
             .WithMany(plant => plant.Likes)
             .UsingEntity(join => join.ToTable("UserPlantLikes"));
-        
+
         builder
             .HasMany(user => user.BookmarkedPlants)
             .WithMany(plant => plant.Bookmarks)
             .UsingEntity(join => join.ToTable("UserPlantBookmarks"));
+
+        builder
+            .HasMany(user => user.LikedArticles)
+            .WithMany(article => article.Likes)
+            .UsingEntity(join => join.ToTable("UserArticleLikes"));
+
+        builder
+            .HasMany(user => user.BookmarkedArticles)
+            .WithMany(article => article.Bookmarks)
+            .UsingEntity(join => join.ToTable("UserArticleBookmarks"));
     }
 }

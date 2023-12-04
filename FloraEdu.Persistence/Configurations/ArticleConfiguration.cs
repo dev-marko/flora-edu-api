@@ -11,5 +11,10 @@ public class ArticleConfiguration : BaseEntityConfiguration<Article>
         base.Configure(builder);
 
         builder.ToTable("Articles");
+
+        builder
+            .HasOne(a => a.Author)
+            .WithMany(a => a.AuthoredArticles)
+            .HasForeignKey("AuthorId");
     }
 }

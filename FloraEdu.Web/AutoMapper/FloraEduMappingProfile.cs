@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using FloraEdu.Domain.DataTransferObjects;
+using FloraEdu.Domain.DataTransferObjects.Article;
 using FloraEdu.Domain.DataTransferObjects.Plant;
 using FloraEdu.Domain.Entities;
 
@@ -22,5 +24,8 @@ public class FloraEduMappingProfile : Profile
         
         // Plant Author
         CreateMap<User, AuthorDto>();
+        
+        // Blog
+        CreateMap<Article, ArticleDto>();
     }
 }

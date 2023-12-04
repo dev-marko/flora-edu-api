@@ -13,4 +13,7 @@ public class User : IdentityUser
     public List<Plant> AuthoredPlants { get; set; } = new();
     public List<Plant> LikedPlants { get; set; } = new();
     public List<Plant> BookmarkedPlants { get; set; } = new();
+    public List<Article> AuthoredArticles { get; set; } = new();
+    public List<Article> LikedArticles { get; set; } = new();
+    public List<Article> BookmarkedArticles { get; set; } = new();
 }
