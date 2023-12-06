@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using AutoMapper;
 using FloraEdu.Application.Authentication.Interfaces;
 using FloraEdu.Application.Services.Interfaces;
 using FloraEdu.Domain.DataTransferObjects.Article;
@@ -13,11 +14,13 @@ public class ArticlesController : ControllerBase
 {
     private readonly IBlogService _blogService;
     private readonly IUserService _userService;
+    private readonly IMapper _mapper;
 
-    public ArticlesController(IBlogService blogService, IUserService userService)
+    public ArticlesController(IBlogService blogService, IUserService userService, IMapper mapper)
     {
         _blogService = blogService;
         _userService = userService;
+        _mapper = mapper;
     }
 
     [HttpGet]
@@ -36,5 +39,15 @@ public class ArticlesController : ControllerBase
             articlesRequestDto.SearchTerm, user);
 
         return Results.Ok(articles);
+    }
+
+    [HttpGet("{articleId:guid}")]
+    public async Task<IResult> GetArticleById(Guid articleId)
+    {
+        var article = await _blogService.GetArticleById(articleId);
+        if (article is null) return Results.NotFound($"Article with ID: {articleId} not found.");
+        var mappedArticle = _mapper.Map<ArticleDto>(article);
+
+        return Results.Ok(mappedArticle);
     }
 }
