@@ -47,6 +47,8 @@ public class AuthenticationController : ControllerBase
         await _userService.CheckPasswordAsync(model.UserName, model.Password);
         var token = await _jwtProvider.GenerateJwt(user);
 
+        var roles = await _userService.GetRolesAsync(model);
+
         var response = new
         {
             AccessToken = token,
@@ -56,7 +58,8 @@ public class AuthenticationController : ControllerBase
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,
-                AvatarUrl = user.AvatarImageUrl
+                AvatarUrl = user.AvatarImageUrl,
+                Roles = roles
             }
         };
 
