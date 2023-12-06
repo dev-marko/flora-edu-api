@@ -13,12 +13,23 @@ public class BlogService : BaseService<Article>, IBlogService
 {
     private readonly ApplicationDbContext _dbContext;
     private readonly IMapper _mapper;
+    private readonly ILogger<Article> _logger;
 
     public BlogService(ApplicationDbContext dbContext, ILogger<Article> logger, IMapper mapper) : base(dbContext,
         logger)
     {
         _dbContext = dbContext;
+        _logger = logger;
         _mapper = mapper;
+    }
+
+    public async Task<Article?> GetArticleById(Guid id)
+    {
+        var entity = await _dbContext.Set<Article>().Include(p => p.Author).FirstOrDefaultAsync(p => p.Id == id);
+
+        if (entity is null) _logger.LogError("Entity with ID: {id} not found", id);
+
+        return entity;
     }
 
     public async Task<PagedList<ArticleDto>> GetArticlesQuery(int page = 1, int pageSize = 10,
@@ -42,8 +53,10 @@ public class BlogService : BaseService<Article>, IBlogService
             {
                 Id = article.Id,
                 Title = article.Title,
+                Subtitle = article.Subtitle,
                 ShortDescription = article.ShortDescription,
                 HeaderImageUrl = article.HeaderImageUrl,
+                Content = article.Content,
                 Author = _mapper.Map<AuthorDto>(article.Author),
                 IsBookmarked = CheckIfArticleIsBookmarked(article, user),
                 IsLiked = CheckIfArticleIsLiked(article, user),
