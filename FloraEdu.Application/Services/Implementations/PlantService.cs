@@ -15,7 +15,6 @@ public class PlantService : BaseService<Plant>, IPlantService
 {
     private readonly ApplicationDbContext _dbContext;
     private readonly IMapper _mapper;
-    private readonly IUserService _userService;
     private readonly ILogger<Plant> _logger;
 
     public PlantService(ApplicationDbContext dbContext, ILogger<Plant> logger, IMapper mapper, IUserService userService)
@@ -24,7 +23,6 @@ public class PlantService : BaseService<Plant>, IPlantService
         _dbContext = dbContext;
         _logger = logger;
         _mapper = mapper;
-        _userService = userService;
     }
 
     public async Task<Plant?> GetPlantById(Guid id)
