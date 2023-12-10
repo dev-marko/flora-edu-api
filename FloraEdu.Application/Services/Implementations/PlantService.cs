@@ -34,6 +34,31 @@ public class PlantService : BaseService<Plant>, IPlantService
         return entity;
     }
 
+    public async Task<PagedList<PlantCardDto>> GetPlantsByCreator(User user, int page = 1, int pageSize = 10)
+    {
+        var plants = _dbContext.Set<Plant>()
+            .Include(p => p.Author)
+            .Where(p => p.Author != null && p.Author.Id == user.Id);
+
+        var plantCards = plants
+            .Select(plant => new PlantCardDto
+            {
+                Id = plant.Id,
+                Name = plant.Name,
+                Type = plant.Type.ToString(),
+                Description = plant.Description,
+                CreatedAt = plant.CreatedAt,
+                LastModified = plant.LastModified,
+                IsBookmarked = false,
+                IsLiked = false
+            })
+            .OrderByDescending(p => p.LastModified);
+
+        var plantCardsPagedList = await PagedList<PlantCardDto>.CreateAsync(plantCards, page, pageSize);
+
+        return plantCardsPagedList;
+    }
+
     public async Task<PagedList<PlantCardDto>> GetPlantsQuery(int page = 1, int pageSize = 10,
         PlantType type = PlantType.Unknown, User? user = null)
     {
