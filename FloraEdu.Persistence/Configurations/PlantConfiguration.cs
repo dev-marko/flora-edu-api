@@ -16,5 +16,7 @@ public class PlantConfiguration : BaseEntityConfiguration<Plant>
             .HasOne(p => p.Author)
             .WithMany(a => a.AuthoredPlants)
             .HasForeignKey("AuthorId");
+        
+        builder.HasQueryFilter(p => !p.IsDeleted);
     }
 }
