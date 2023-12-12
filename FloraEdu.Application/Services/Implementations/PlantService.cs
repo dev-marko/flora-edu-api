@@ -30,6 +30,8 @@ public class PlantService : BaseService<Plant>, IPlantService
             .Include(p => p.Author)
             .Include(p => p.Likes)
             .Include(p => p.Bookmarks)
+            .Include(p => p.Comments)
+            .ThenInclude(pc => pc.User)
             .Include(p => p.Comments.OrderByDescending(c => c.CreatedAt))
             .ThenInclude(pc => pc.Likes)
             .FirstOrDefaultAsync(p => p.Id == id);
