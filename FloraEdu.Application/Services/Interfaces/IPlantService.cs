@@ -16,10 +16,12 @@ public interface IPlantService : IService<Plant>
     Task<List<PlantDto>> QueryPlantByName(string name);
     Task<List<PlantDto>> GetAllByType(PlantType type);
 
+    Task<bool> LikePlant(Plant plant, User user);
+    Task<bool> UnlikePlant(Plant plant, User user);
+
     // Plant Comments
     Task<PlantComment?> GetPlantCommentById(Guid plantCommentId);
     Task<bool> AddNewComment(User user, Guid plantId, string content);
     Task<bool> LikePlantComment(PlantComment plantComment, User user);
-    Task<bool> CheckIfPlantCommentIsLiked(Guid plantCommentId, User user);
     Task<bool> UnlikePlantComment(PlantComment plantComment, User user);
 }

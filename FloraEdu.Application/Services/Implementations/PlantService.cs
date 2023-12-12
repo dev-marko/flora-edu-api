@@ -28,6 +28,8 @@ public class PlantService : BaseService<Plant>, IPlantService
     {
         var entity = await _dbContext.Set<Plant>()
             .Include(p => p.Author)
+            .Include(p => p.Likes)
+            .Include(p => p.Bookmarks)
             .Include(p => p.Comments.OrderByDescending(c => c.CreatedAt))
             .ThenInclude(pc => pc.Likes)
             .FirstOrDefaultAsync(p => p.Id == id);
@@ -82,12 +84,21 @@ public class PlantService : BaseService<Plant>, IPlantService
                 CreatedAt = plant.CreatedAt,
                 LastModified = plant.LastModified,
                 IsBookmarked = CheckIfPlantIsBookmarked(plant, user),
-                IsLiked = CheckIfPlantIsLiked(plant, user)
+                IsLiked = CheckIfPlantIsLiked(plant, user),
+                LikeCount = plant.Likes.Count
             })
             .OrderBy(p => p.Name);
         var plantCardsPagedList = await PagedList<PlantCardDto>.CreateAsync(plantCards, page, pageSize);
 
         return plantCardsPagedList;
+    }
+
+    public async Task<bool> UnlikePlant(Plant plant, User user)
+    {
+        plant.Likes.Remove(user);
+        var res = await _dbContext.SaveChangesAsync();
+
+        return res > 0;
     }
 
     public async Task<PlantComment?> GetPlantCommentById(Guid plantCommentId)
@@ -159,6 +170,14 @@ public class PlantService : BaseService<Plant>, IPlantService
         var mappedResult = _mapper.Map<List<PlantDto>>(queryResult);
 
         return mappedResult;
+    }
+
+    public async Task<bool> LikePlant(Plant plant, User user)
+    {
+        plant.Likes.Add(user);
+        var res = await _dbContext.SaveChangesAsync();
+
+        return res > 0;
     }
 
     private static bool CheckIfPlantIsBookmarked(Plant plant, User? user)
