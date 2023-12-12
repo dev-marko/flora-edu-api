@@ -27,6 +27,10 @@ public class BlogService : BaseService<Article>, IBlogService
     {
         var entity = await _dbContext.Set<Article>()
             .Include(a => a.Author)
+            .Include(a => a.Likes)
+            .Include(a => a.Bookmarks)
+            .Include(a => a.Comments)
+            .ThenInclude(ac => ac.User)
             .Include(a => a.Comments.OrderByDescending(c => c.CreatedAt))
             .ThenInclude(ac => ac.Likes)
             .FirstOrDefaultAsync(a => a.Id == id);
@@ -64,6 +68,7 @@ public class BlogService : BaseService<Article>, IBlogService
                 Author = _mapper.Map<AuthorDto>(article.Author),
                 IsBookmarked = CheckIfArticleIsBookmarked(article, user),
                 IsLiked = CheckIfArticleIsLiked(article, user),
+                LikeCount = article.Likes.Count,
                 CreatedAt = article.CreatedAt,
                 LastModified = article.LastModified
             });
@@ -106,6 +111,30 @@ public class BlogService : BaseService<Article>, IBlogService
     public async Task<bool> LikeArticleComment(ArticleComment articleComment, User user)
     {
         articleComment.Likes.Add(user);
+        var res = await _dbContext.SaveChangesAsync();
+
+        return res > 0;
+    }
+
+    public async Task<bool> UnlikeArticleComment(ArticleComment articleComment, User user)
+    {
+        articleComment.Likes.Remove(user);
+        var res = await _dbContext.SaveChangesAsync();
+
+        return res > 0;
+    }
+
+    public async Task<bool> LikeArticle(Article article, User user)
+    {
+        article.Likes.Add(user);
+        var res = await _dbContext.SaveChangesAsync();
+
+        return res > 0;
+    }
+
+    public async Task<bool> UnlikeArticle(Article article, User user)
+    {
+        article.Likes.Remove(user);
         var res = await _dbContext.SaveChangesAsync();
 
         return res > 0;
