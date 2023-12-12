@@ -2,8 +2,10 @@
 using AutoMapper;
 using FloraEdu.Application.Authentication.Interfaces;
 using FloraEdu.Application.Services.Interfaces;
+using FloraEdu.Domain.Authorization;
 using FloraEdu.Domain.DataTransferObjects.Plant;
 using FloraEdu.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FloraEdu.Web.Controllers;
@@ -43,10 +45,59 @@ public class PlantsController : ControllerBase
     [HttpGet("{plantId:guid}")]
     public async Task<IResult> GetPlantById(Guid plantId)
     {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
         var plant = await _plantService.GetPlantById(plantId);
         if (plant is null) return Results.NotFound($"Plant with ID: {plantId} not found.");
         var mappedPlant = _mapper.Map<PlantDto>(plant);
 
+        // TODO: Figure out how to compute the IsLiked property on each PlantCommentDto
+
         return Results.Ok(mappedPlant);
+    }
+
+    [HttpPost("comment")]
+    [Authorize(AuthorizationPolicies.Authenticated)]
+    public async Task<IResult> AddNewComment([FromBody] NewPlantCommentDto newPlantCommentDto)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        var user = await _userService.FindByIdAsync(Guid.Parse(userId!));
+
+        var res = await _plantService.AddNewComment(user, newPlantCommentDto.PlantId, newPlantCommentDto.Content);
+
+        return res ? Results.Ok() : Results.BadRequest();
+    }
+
+    [HttpPost("like-comment")]
+    [Authorize(AuthorizationPolicies.Authenticated)]
+    public async Task<IResult> LikePlantComment([FromBody] Guid plantCommentId)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        var user = await _userService.FindByIdAsync(Guid.Parse(userId!));
+
+        var plantComment = await _plantService.GetPlantCommentById(plantCommentId);
+        if (plantComment is null) return Results.NotFound();
+
+        var res = await _plantService.LikePlantComment(plantComment, user);
+
+        return res ? Results.Ok() : Results.BadRequest();
+    }
+
+    [HttpPost("unlike-comment")]
+    [Authorize(AuthorizationPolicies.Authenticated)]
+    public async Task<IResult> UnlikePlantComment([FromBody] Guid plantCommentId)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        var user = await _userService.FindByIdAsync(Guid.Parse(userId!));
+
+        var plantComment = await _plantService.GetPlantCommentById(plantCommentId);
+        if (plantComment is null) return Results.NotFound();
+
+        var res = await _plantService.LikePlantComment(plantComment, user);
+
+        return res ? Results.Ok() : Results.BadRequest();
     }
 }

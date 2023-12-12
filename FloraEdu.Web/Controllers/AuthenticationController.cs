@@ -1,6 +1,8 @@
-﻿using FloraEdu.Application.Authentication.Dtos;
+﻿using AutoMapper;
+using FloraEdu.Application.Authentication.Dtos;
 using FloraEdu.Application.Authentication.Interfaces;
 using FloraEdu.Domain.Authorization;
+using FloraEdu.Domain.DataTransferObjects;
 using FloraEdu.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,11 +14,13 @@ public class AuthenticationController : ControllerBase
 {
     private readonly IJwtProvider _jwtProvider;
     private readonly IUserService _userService;
+    private readonly IMapper _mapper;
 
-    public AuthenticationController(IJwtProvider jwtProvider, IUserService userService)
+    public AuthenticationController(IJwtProvider jwtProvider, IUserService userService, IMapper mapper)
     {
         _jwtProvider = jwtProvider;
         _userService = userService;
+        _mapper = mapper;
     }
 
     [HttpPost]
@@ -49,17 +53,17 @@ public class AuthenticationController : ControllerBase
 
         var roles = await _userService.GetRolesAsync(model);
 
-        var response = new
+        var response = new LoginResponse
         {
             AccessToken = token,
-            UserInfo = new
+            UserInfo = new UserInfo
             {
-                UserName = user.UserName,
+                UserName = user.UserName!,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Email = user.Email,
+                Email = user.Email!,
                 AvatarUrl = user.AvatarImageUrl,
-                Roles = roles
+                Roles = roles.ToList()
             }
         };
 
