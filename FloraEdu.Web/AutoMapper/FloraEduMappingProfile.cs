@@ -20,12 +20,19 @@ public class FloraEduMappingProfile : Profile
 
         CreateMap<PlantComment, PlantCommentDto>()
             .ForMember(dest => dest.PlantId, opt => opt.MapFrom(src => src.PlantId))
+            .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(src => src.Likes.Count))
             .ReverseMap();
-        
-        // Plant Author
+
+        // User
         CreateMap<User, AuthorDto>();
-        
+        CreateMap<User, CommentUserInfoDto>();
+        CreateMap<User, UserInfo>();
+
         // Blog
         CreateMap<Article, ArticleDto>();
+        CreateMap<ArticleComment, ArticleCommentDto>()
+            .ForMember(dest => dest.ArticleId, opt => opt.MapFrom(src => src.ArticleId))
+            .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(src => src.Likes.Count))
+            .ReverseMap();
     }
 }
