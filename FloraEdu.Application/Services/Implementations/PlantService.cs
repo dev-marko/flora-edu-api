@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using FloraEdu.Application.Authentication.Interfaces;
 using FloraEdu.Application.Services.Interfaces;
 using FloraEdu.Domain.DataTransferObjects;
 using FloraEdu.Domain.DataTransferObjects.Plant;
@@ -17,7 +16,7 @@ public class PlantService : BaseService<Plant>, IPlantService
     private readonly IMapper _mapper;
     private readonly ILogger<Plant> _logger;
 
-    public PlantService(ApplicationDbContext dbContext, ILogger<Plant> logger, IMapper mapper, IUserService userService)
+    public PlantService(ApplicationDbContext dbContext, ILogger<Plant> logger, IMapper mapper)
         : base(dbContext, logger)
     {
         _dbContext = dbContext;
@@ -27,7 +26,11 @@ public class PlantService : BaseService<Plant>, IPlantService
 
     public async Task<Plant?> GetPlantById(Guid id)
     {
-        var entity = await _dbContext.Set<Plant>().Include(p => p.Author).FirstOrDefaultAsync(p => p.Id == id);
+        var entity = await _dbContext.Set<Plant>()
+            .Include(p => p.Author)
+            .Include(p => p.Comments.OrderByDescending(c => c.CreatedAt))
+            .ThenInclude(pc => pc.Likes)
+            .FirstOrDefaultAsync(p => p.Id == id);
 
         if (entity is null) _logger.LogError("Entity with ID: {id} not found", id);
 
@@ -85,6 +88,59 @@ public class PlantService : BaseService<Plant>, IPlantService
         var plantCardsPagedList = await PagedList<PlantCardDto>.CreateAsync(plantCards, page, pageSize);
 
         return plantCardsPagedList;
+    }
+
+    public async Task<PlantComment?> GetPlantCommentById(Guid plantCommentId)
+    {
+        var plantComment = await _dbContext.Set<PlantComment>()
+            .Include(pc => pc.Likes)
+            .FirstOrDefaultAsync(p => p.Id == plantCommentId);
+
+        if (plantComment is null) _logger.LogError("PlantComment with ID: {id} not found", plantCommentId);
+
+        return plantComment;
+    }
+
+    public async Task<bool> AddNewComment(User user, Guid plantId, string content)
+    {
+        var plant = await GetPlantById(plantId);
+
+        var newComment = new PlantComment
+        {
+            Plant = plant!,
+            UserId = user.Id,
+            User = user,
+            Content = content,
+        };
+
+        plant!.Comments.Add(newComment);
+
+        var res = await _dbContext.SaveChangesAsync();
+
+        return res > 0;
+    }
+
+    public async Task<bool> LikePlantComment(PlantComment plantComment, User user)
+    {
+        plantComment.Likes.Add(user);
+        var res = await _dbContext.SaveChangesAsync();
+
+        return res > 0;
+    }
+
+    public async Task<bool> CheckIfPlantCommentIsLiked(Guid plantCommentId, User user)
+    {
+        var plantComment = await GetPlantCommentById(plantCommentId);
+
+        return plantComment != null && plantComment.Likes.Contains(user);
+    }
+
+    public async Task<bool> UnlikePlantComment(PlantComment plantComment, User user)
+    {
+        plantComment.Likes.Remove(user);
+        var res = await _dbContext.SaveChangesAsync();
+
+        return res > 0;
     }
 
     public async Task<List<PlantDto>> QueryPlantByName(string name)

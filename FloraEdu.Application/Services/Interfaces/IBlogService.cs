@@ -7,5 +7,12 @@ namespace FloraEdu.Application.Services.Interfaces;
 public interface IBlogService
 {
     Task<Article?> GetArticleById(Guid id);
-    Task<PagedList<ArticleDto>> GetArticlesQuery(int page = 1, int pageSize = 10, string? searchTerm = null, User? user = null);
+
+    Task<PagedList<ArticleDto>> GetArticlesQuery(int page = 1, int pageSize = 10, string? searchTerm = null,
+        User? user = null);
+
+    // Article Comments
+    Task<ArticleComment?> GetArticleCommentById(Guid articleCommentId);
+    Task<bool> AddNewComment(User user, Guid articleId, string content);
+    Task<bool> LikeArticleComment(ArticleComment articleComment, User user);
 }
