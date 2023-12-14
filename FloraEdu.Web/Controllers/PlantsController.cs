@@ -7,6 +7,7 @@ using FloraEdu.Domain.DataTransferObjects;
 using FloraEdu.Domain.DataTransferObjects.Plant;
 using FloraEdu.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FloraEdu.Web.Controllers;
@@ -155,6 +156,21 @@ public class PlantsController : ControllerBase
         if (plantComment is null) return Results.NotFound();
 
         var res = await _plantService.UnlikePlantComment(plantComment, user);
+
+        return res ? Results.Ok() : Results.BadRequest();
+    }
+
+    [HttpPost("bookmark")]
+    [Authorize(AuthorizationPolicies.Authenticated)]
+    public async Task<IResult> BookmarkPlant([FromBody] Guid plantId)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user = await _userService.FindByIdAsync(Guid.Parse(userId!));
+
+        var plant = await _plantService.GetPlantById(plantId);
+        if (plant is null) return Results.NotFound();
+
+        var res = await _plantService.BookmarkPlant(plant, user);
 
         return res ? Results.Ok() : Results.BadRequest();
     }

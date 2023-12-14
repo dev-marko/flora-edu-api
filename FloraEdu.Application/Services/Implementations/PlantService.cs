@@ -156,6 +156,22 @@ public class PlantService : BaseService<Plant>, IPlantService
         return res > 0;
     }
 
+    public async Task<bool> BookmarkPlant(Plant plant, User user)
+    {
+        if (!plant.Bookmarks.Contains(user))
+        {
+            plant.Bookmarks.Add(user);
+        }
+        else
+        {
+            plant.Bookmarks.Remove(user);
+        }
+
+        var res = await _dbContext.SaveChangesAsync();
+
+        return res > 0;
+    }
+
     public async Task<List<PlantDto>> QueryPlantByName(string name)
     {
         var plants = _dbContext.Set<Plant>();

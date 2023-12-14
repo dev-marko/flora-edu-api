@@ -18,4 +18,5 @@ public interface IBlogService
     Task<bool> UnlikeArticleComment(ArticleComment articleComment, User user);
     Task<bool> LikeArticle(Article article, User user);
     Task<bool> UnlikeArticle(Article article, User user);
+    Task<bool> BookmarkArticle(Article article, User user);
 }
