@@ -18,13 +18,16 @@ public class PlantsController : ControllerBase
 {
     private readonly IPlantService _plantService;
     private readonly IUserService _userService;
+    private readonly IUserFeaturesService _userFeaturesService;
     private readonly IMapper _mapper;
 
-    public PlantsController(IPlantService plantService, IUserService userService, IMapper mapper)
+    public PlantsController(IPlantService plantService, IUserService userService, IMapper mapper,
+        IUserFeaturesService userFeaturesService)
     {
         _plantService = plantService;
         _userService = userService;
         _mapper = mapper;
+        _userFeaturesService = userFeaturesService;
     }
 
     [HttpGet]
@@ -40,6 +43,30 @@ public class PlantsController : ControllerBase
         }
 
         var plants = await _plantService.GetPlantsQuery(requestDto.Page, requestDto.Size, requestDto.Type, user);
+
+        return Results.Ok(plants);
+    }
+
+    [HttpGet("bookmarks")]
+    [Authorize(AuthorizationPolicies.Authenticated)]
+    public async Task<IResult> GetBookmarkedPlants([FromQuery] PlantsRequestDto requestDto)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var user = await _userFeaturesService.GetUser(userId);
+
+        if (user is null)
+        {
+            return Results.NotFound();
+        }
+
+        var plants = _userFeaturesService.GetBookmarkedPlants(user, requestDto.Page, requestDto.Size,
+            requestDto.Type);
 
         return Results.Ok(plants);
     }

@@ -17,17 +17,20 @@ public class ArticlesController : ControllerBase
 {
     private readonly IBlogService _blogService;
     private readonly IUserService _userService;
+    private readonly IUserFeaturesService _userFeaturesService;
     private readonly IMapper _mapper;
 
-    public ArticlesController(IBlogService blogService, IUserService userService, IMapper mapper)
+    public ArticlesController(IBlogService blogService, IUserService userService, IMapper mapper,
+        IUserFeaturesService userFeaturesService)
     {
         _blogService = blogService;
         _userService = userService;
         _mapper = mapper;
+        _userFeaturesService = userFeaturesService;
     }
 
     [HttpGet]
-    public async Task<IResult> Get([FromQuery] ArticlesRequestDto articlesRequestDto)
+    public async Task<IResult> GetArticles([FromQuery] ArticlesRequestDto articlesRequestDto)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -40,6 +43,30 @@ public class ArticlesController : ControllerBase
 
         var articles = await _blogService.GetArticlesQuery(articlesRequestDto.Page, articlesRequestDto.Size,
             articlesRequestDto.SearchTerm, user);
+
+        return Results.Ok(articles);
+    }
+
+    [HttpGet("bookmarks")]
+    [Authorize(AuthorizationPolicies.Authenticated)]
+    public async Task<IResult> GetBookmarkedArticles([FromQuery] ArticlesRequestDto articlesRequestDto)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var user = await _userFeaturesService.GetUser(userId);
+
+        if (user is null)
+        {
+            return Results.NotFound();
+        }
+
+        var articles = _userFeaturesService.GetBookmarkedArticles(user, articlesRequestDto.Page, articlesRequestDto.Size,
+            articlesRequestDto.SearchTerm);
 
         return Results.Ok(articles);
     }
