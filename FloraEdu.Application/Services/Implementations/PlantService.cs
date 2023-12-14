@@ -95,9 +95,17 @@ public class PlantService : BaseService<Plant>, IPlantService
         return plantCardsPagedList;
     }
 
-    public async Task<bool> UnlikePlant(Plant plant, User user)
+    public async Task<bool> BookmarkPlant(Plant plant, User user)
     {
-        plant.Likes.Remove(user);
+        if (!plant.Bookmarks.Contains(user))
+        {
+            plant.Bookmarks.Add(user);
+        }
+        else
+        {
+            plant.Bookmarks.Remove(user);
+        }
+
         var res = await _dbContext.SaveChangesAsync();
 
         return res > 0;
@@ -135,7 +143,15 @@ public class PlantService : BaseService<Plant>, IPlantService
 
     public async Task<bool> LikePlantComment(PlantComment plantComment, User user)
     {
-        plantComment.Likes.Add(user);
+        if (!plantComment.Likes.Contains(user))
+        {
+            plantComment.Likes.Add(user);
+        }
+        else
+        {
+            plantComment.Likes.Remove(user);
+        }
+
         var res = await _dbContext.SaveChangesAsync();
 
         return res > 0;
@@ -148,29 +164,6 @@ public class PlantService : BaseService<Plant>, IPlantService
         return plantComment != null && plantComment.Likes.Contains(user);
     }
 
-    public async Task<bool> UnlikePlantComment(PlantComment plantComment, User user)
-    {
-        plantComment.Likes.Remove(user);
-        var res = await _dbContext.SaveChangesAsync();
-
-        return res > 0;
-    }
-
-    public async Task<bool> BookmarkPlant(Plant plant, User user)
-    {
-        if (!plant.Bookmarks.Contains(user))
-        {
-            plant.Bookmarks.Add(user);
-        }
-        else
-        {
-            plant.Bookmarks.Remove(user);
-        }
-
-        var res = await _dbContext.SaveChangesAsync();
-
-        return res > 0;
-    }
 
     public async Task<List<PlantDto>> QueryPlantByName(string name)
     {
@@ -192,7 +185,15 @@ public class PlantService : BaseService<Plant>, IPlantService
 
     public async Task<bool> LikePlant(Plant plant, User user)
     {
-        plant.Likes.Add(user);
+        if (!plant.Likes.Contains(user))
+        {
+            plant.Likes.Add(user);
+        }
+        else
+        {
+            plant.Likes.Remove(user);
+        }
+
         var res = await _dbContext.SaveChangesAsync();
 
         return res > 0;

@@ -97,18 +97,17 @@ public class PlantsController : ControllerBase
         return res ? Results.Ok() : Results.BadRequest();
     }
 
-    [HttpPost("unlike-plant")]
+    [HttpPost("bookmark")]
     [Authorize(AuthorizationPolicies.Authenticated)]
-    public async Task<IResult> UnlikePlant([FromBody] Guid plantId)
+    public async Task<IResult> BookmarkPlant([FromBody] Guid plantId)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
         var user = await _userService.FindByIdAsync(Guid.Parse(userId!));
 
         var plant = await _plantService.GetPlantById(plantId);
         if (plant is null) return Results.NotFound();
 
-        var res = await _plantService.UnlikePlant(plant, user);
+        var res = await _plantService.BookmarkPlant(plant, user);
 
         return res ? Results.Ok() : Results.BadRequest();
     }
@@ -140,37 +139,6 @@ public class PlantsController : ControllerBase
         if (plantComment is null) return Results.NotFound();
 
         var res = await _plantService.LikePlantComment(plantComment, user);
-
-        return res ? Results.Ok() : Results.BadRequest();
-    }
-
-    [HttpPost("unlike-comment")]
-    [Authorize(AuthorizationPolicies.Authenticated)]
-    public async Task<IResult> UnlikePlantComment([FromBody] Guid plantCommentId)
-    {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        var user = await _userService.FindByIdAsync(Guid.Parse(userId!));
-
-        var plantComment = await _plantService.GetPlantCommentById(plantCommentId);
-        if (plantComment is null) return Results.NotFound();
-
-        var res = await _plantService.UnlikePlantComment(plantComment, user);
-
-        return res ? Results.Ok() : Results.BadRequest();
-    }
-
-    [HttpPost("bookmark")]
-    [Authorize(AuthorizationPolicies.Authenticated)]
-    public async Task<IResult> BookmarkPlant([FromBody] Guid plantId)
-    {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var user = await _userService.FindByIdAsync(Guid.Parse(userId!));
-
-        var plant = await _plantService.GetPlantById(plantId);
-        if (plant is null) return Results.NotFound();
-
-        var res = await _plantService.BookmarkPlant(plant, user);
 
         return res ? Results.Ok() : Results.BadRequest();
     }
