@@ -108,33 +108,33 @@ public class BlogService : BaseService<Article>, IBlogService
         return res > 0;
     }
 
-    public async Task<bool> LikeArticleComment(ArticleComment articleComment, User user)
-    {
-        articleComment.Likes.Add(user);
-        var res = await _dbContext.SaveChangesAsync();
-
-        return res > 0;
-    }
-
-    public async Task<bool> UnlikeArticleComment(ArticleComment articleComment, User user)
-    {
-        articleComment.Likes.Remove(user);
-        var res = await _dbContext.SaveChangesAsync();
-
-        return res > 0;
-    }
-
     public async Task<bool> LikeArticle(Article article, User user)
     {
-        article.Likes.Add(user);
+        if (!article.Likes.Contains(user))
+        {
+            article.Likes.Add(user);
+        }
+        else
+        {
+            article.Likes.Remove(user);
+        }
+
         var res = await _dbContext.SaveChangesAsync();
 
         return res > 0;
     }
 
-    public async Task<bool> UnlikeArticle(Article article, User user)
+    public async Task<bool> LikeArticleComment(ArticleComment articleComment, User user)
     {
-        article.Likes.Remove(user);
+        if (!articleComment.Likes.Contains(user))
+        {
+            articleComment.Likes.Add(user);
+        }
+        else
+        {
+            articleComment.Likes.Remove(user);
+        }
+
         var res = await _dbContext.SaveChangesAsync();
 
         return res > 0;

@@ -14,9 +14,7 @@ public interface IBlogService
     // Article Comments
     Task<ArticleComment?> GetArticleCommentById(Guid articleCommentId);
     Task<bool> AddNewComment(User user, Guid articleId, string content);
-    Task<bool> LikeArticleComment(ArticleComment articleComment, User user);
-    Task<bool> UnlikeArticleComment(ArticleComment articleComment, User user);
     Task<bool> LikeArticle(Article article, User user);
-    Task<bool> UnlikeArticle(Article article, User user);
+    Task<bool> LikeArticleComment(ArticleComment articleComment, User user);
     Task<bool> BookmarkArticle(Article article, User user);
 }
