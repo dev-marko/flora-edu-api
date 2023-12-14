@@ -96,6 +96,21 @@ public class ArticlesController : ControllerBase
 
         return res ? Results.Ok() : Results.BadRequest();
     }
+    
+    [HttpPost("bookmark")]
+    [Authorize(AuthorizationPolicies.Authenticated)]
+    public async Task<IResult> BookmarkArticle([FromBody] Guid articleId)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user = await _userService.FindByIdAsync(Guid.Parse(userId!));
+
+        var article = await _blogService.GetArticleById(articleId);
+        if (article is null) return Results.NotFound();
+
+        var res = await _blogService.BookmarkArticle(article, user);
+
+        return res ? Results.Ok() : Results.BadRequest();
+    }
 
     [HttpPost("unlike-article")]
     [Authorize(AuthorizationPolicies.Authenticated)]

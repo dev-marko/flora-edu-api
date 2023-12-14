@@ -140,6 +140,22 @@ public class BlogService : BaseService<Article>, IBlogService
         return res > 0;
     }
 
+    public async Task<bool> BookmarkArticle(Article article, User user)
+    {
+        if (!article.Bookmarks.Contains(user))
+        {
+            article.Bookmarks.Add(user);
+        }
+        else
+        {
+            article.Bookmarks.Remove(user);
+        }
+
+        var res = await _dbContext.SaveChangesAsync();
+
+        return res > 0;
+    }
+
     private static bool CheckIfArticleIsBookmarked(Article article, User? user)
     {
         return user is not null && article.Bookmarks.Contains(user);

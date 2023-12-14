@@ -24,4 +24,5 @@ public interface IPlantService : IService<Plant>
     Task<bool> AddNewComment(User user, Guid plantId, string content);
     Task<bool> LikePlantComment(PlantComment plantComment, User user);
     Task<bool> UnlikePlantComment(PlantComment plantComment, User user);
+    Task<bool> BookmarkPlant(Plant plant, User user);
 }
