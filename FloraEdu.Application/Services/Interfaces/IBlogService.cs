@@ -13,6 +13,8 @@ public interface IBlogService
     
     Task<List<ArticleDto>> GetMostPopularArticlesGlobally(int take = 3, User? user = null);
 
+    void RegisterUniqueVisitor(Guid uuaid, Guid articleId, string? userId);
+
     // Article Comments
     Task<ArticleComment?> GetArticleCommentById(Guid articleCommentId);
     Task<bool> AddNewComment(User user, Guid articleId, string content);

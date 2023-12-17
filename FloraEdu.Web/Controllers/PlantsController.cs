@@ -193,4 +193,13 @@ public class PlantsController : ControllerBase
 
         return res ? Results.Ok() : Results.BadRequest();
     }
+    
+    [HttpPost("register-unique-visitor")]
+    public IResult RegisterUniqueVisitor([FromBody] UniqueVisitorDto uniqueVisitorDto)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        _plantService.RegisterUniqueVisitor(uniqueVisitorDto.UUAID, uniqueVisitorDto.EntityId, userId);
+
+        return Results.Ok();
+    }
 }

@@ -11,6 +11,7 @@ namespace FloraEdu.Application.Services.Implementations;
 
 public class BlogService : BaseService<Article>, IBlogService
 {
+    private readonly object _registerUniqueUserLock = new();
     private readonly ApplicationDbContext _dbContext;
     private readonly IMapper _mapper;
     private readonly ILogger<Article> _logger;
@@ -104,6 +105,32 @@ public class BlogService : BaseService<Article>, IBlogService
             .ToListAsync();
 
         return articleDtos;
+    }
+
+    public void RegisterUniqueVisitor(Guid uuaid, Guid articleId, string? userId = null)
+    {
+        lock (_registerUniqueUserLock)
+        {
+            var articleVisitors = _dbContext.Set<UniqueArticleVisitor>();
+            var userAlreadyRegistered = articleVisitors.Any(a => a.UserId == userId || a.UUAID == uuaid);
+
+            if (userAlreadyRegistered)
+            {
+                return;
+            }
+
+            var newUniqueVisitor = new UniqueArticleVisitor
+            {
+                UUAID = uuaid,
+                ArticleId = articleId,
+                UserId = userId,
+                IsAnonymous = userId is null
+            };
+
+            articleVisitors.Add(newUniqueVisitor);
+
+            _dbContext.SaveChanges();
+        }
     }
 
     public async Task<ArticleComment?> GetArticleCommentById(Guid articleCommentId)

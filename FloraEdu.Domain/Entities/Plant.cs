@@ -15,4 +15,5 @@ public class Plant : BaseEntity
     public List<PlantComment> Comments { get; set; } = new();
     public List<User> Likes { get; set; } = new();
     public List<User> Bookmarks { get; set; } = new();
+    public List<UniquePlantVisitor> UniqueVisitors { get; set; } = new();
 }

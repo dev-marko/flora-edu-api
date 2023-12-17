@@ -18,12 +18,14 @@ public class ApplicationDbContext : IdentityDbContext<User>
 
         builder.HasPostgresExtension("uuid-ossp");
         builder.HasPostgresEnum<PlantType>();
-        
+
         builder.ApplyConfiguration(new UserConfiguration());
         builder.ApplyConfiguration(new PlantConfiguration());
         builder.ApplyConfiguration(new PlantCommentConfiguration());
         builder.ApplyConfiguration(new PlantImageConfiguration());
         builder.ApplyConfiguration(new ArticleConfiguration());
         builder.ApplyConfiguration(new ArticleCommentConfiguration());
+        builder.ApplyConfiguration(new UniqueArticleVisitorConfiguration());
+        builder.ApplyConfiguration(new UniquePlantVisitorConfiguration());
     }
 }
