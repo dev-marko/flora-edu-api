@@ -11,5 +11,7 @@ public class ArticleDto : BaseDto
     public bool IsLiked { get; set; }
     public bool IsBookmarked { get; set; }
     public int LikeCount { get; set; }
+    public int BookmarkCount { get; set; }
     public List<ArticleCommentDto> Comments { get; set; } = new();
+    public int CommentCount { get; set; }
 }

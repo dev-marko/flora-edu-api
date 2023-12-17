@@ -47,6 +47,22 @@ public class ArticlesController : ControllerBase
         return Results.Ok(articles);
     }
 
+    [HttpGet("most-popular")]
+    public async Task<IResult> GetMostPopularArticles()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        User? user = null;
+
+        if (userId is not null)
+        {
+            user = await _userService.FindByIdAsync(Guid.Parse(userId));
+        }
+
+        var articles = await _blogService.GetMostPopularArticlesGlobally(3, user);
+
+        return Results.Ok(articles);
+    }
+
     [HttpGet("bookmarks")]
     [Authorize(AuthorizationPolicies.Authenticated)]
     public async Task<IResult> GetBookmarkedArticles([FromQuery] ArticlesRequestDto articlesRequestDto)
@@ -65,7 +81,8 @@ public class ArticlesController : ControllerBase
             return Results.NotFound();
         }
 
-        var articles = _userFeaturesService.GetBookmarkedArticles(user, articlesRequestDto.Page, articlesRequestDto.Size,
+        var articles = _userFeaturesService.GetBookmarkedArticles(user, articlesRequestDto.Page,
+            articlesRequestDto.Size,
             articlesRequestDto.SearchTerm);
 
         return Results.Ok(articles);

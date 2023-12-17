@@ -10,9 +10,9 @@ public interface IUserFeaturesService
 {
     Task<User?> GetUser(string userId);
 
-    PagedList<PlantCardDto> GetBookmarkedPlants(User user, int page = 1, int pageSize = 10,
-        PlantType type = PlantType.Unknown);
+    PagedList<PlantCardDto> GetBookmarkedPlants(User user, int page = 1, int pageSize = 8,
+        PlantType type = PlantType.Unknown, string? searchTerm = null);
 
-    PagedList<ArticleDto> GetBookmarkedArticles(User user, int page = 1, int pageSize = 10,
+    PagedList<ArticleDto> GetBookmarkedArticles(User user, int page = 1, int pageSize = 8,
         string? searchTerm = null);
 }

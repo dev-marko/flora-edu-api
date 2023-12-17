@@ -41,7 +41,7 @@ public class PlantService : BaseService<Plant>, IPlantService
         return entity;
     }
 
-    public async Task<PagedList<PlantCardDto>> GetPlantsByCreator(User user, int page = 1, int pageSize = 10)
+    public async Task<PagedList<PlantCardDto>> GetPlantsByCreator(User user, int page = 1, int pageSize = 8)
     {
         var plants = _dbContext.Set<Plant>()
             .Include(p => p.Author)
@@ -66,14 +66,24 @@ public class PlantService : BaseService<Plant>, IPlantService
         return plantCardsPagedList;
     }
 
-    public async Task<PagedList<PlantCardDto>> GetPlantsQuery(int page = 1, int pageSize = 10,
-        PlantType type = PlantType.Unknown, User? user = null)
+    public async Task<PagedList<PlantCardDto>> GetPlantsQuery(int page = 1, int pageSize = 8,
+        PlantType type = PlantType.Unknown, string? searchTerm = null, User? user = null)
     {
-        var plants = _dbContext.Set<Plant>().Include(p => p.Likes).Include(p => p.Bookmarks);
+        IQueryable<Plant> plants = _dbContext.Set<Plant>().Include(p => p.Likes).Include(p => p.Bookmarks);
 
         if (type != PlantType.Unknown)
         {
             plants = plants.Where(p => p.Type == type).Include(p => p.Likes).Include(p => p.Bookmarks);
+        }
+
+        if (!string.IsNullOrEmpty(searchTerm))
+        {
+            var normalizedSearchTerm = searchTerm.ToLower();
+            plants = plants.Where(p =>
+                p.Name.ToLower().Contains(normalizedSearchTerm) ||
+                (p.Author.FirstName != null && p.Author.FirstName.Contains(searchTerm)) ||
+                (p.Author.LastName != null && p.Author.LastName.Contains(searchTerm)) ||
+                p.Description.Contains(searchTerm));
         }
 
         var plantCards = plants
@@ -93,6 +103,84 @@ public class PlantService : BaseService<Plant>, IPlantService
         var plantCardsPagedList = await PagedList<PlantCardDto>.CreateAsync(plantCards, page, pageSize);
 
         return plantCardsPagedList;
+    }
+
+    public Task<List<PlantCardDto>> GetMostPopularPlantsGlobally(int take = 3, User? user = null)
+    {
+        var plants = _dbContext.Set<Plant>().Include(p => p.Likes).Include(p => p.Bookmarks);
+
+        var plantCards = plants
+            .Select(plant => new PlantCardDto
+            {
+                Id = plant.Id,
+                Name = plant.Name,
+                Type = plant.Type.ToString(),
+                Description = plant.Description,
+                CreatedAt = plant.CreatedAt,
+                LastModified = plant.LastModified,
+                IsBookmarked = CheckIfPlantIsBookmarked(plant, user),
+                IsLiked = CheckIfPlantIsLiked(plant, user),
+                LikeCount = plant.Likes.Count
+            })
+            .OrderByDescending(p => p.LikeCount)
+            .Take(take)
+            .ToListAsync();
+
+        return plantCards;
+    }
+
+    public async Task<PlantDto> GetMostPopularPlantByLikes(string userId)
+    {
+        var plant = await _dbContext.Set<Plant>()
+            .Include(p => p.Author)
+            .Include(p => p.Likes)
+            .Include(p => p.Bookmarks)
+            .Include(p => p.Comments)
+            .ThenInclude(pc => pc.User)
+            .Include(p => p.Comments.OrderByDescending(c => c.CreatedAt))
+            .ThenInclude(pc => pc.Likes)
+            .OrderByDescending(p => p.Likes.Count)
+            .FirstAsync();
+
+        var mapped = _mapper.Map<PlantDto>(plant);
+
+        return mapped;
+    }
+
+    public async Task<PlantDto> GetMostPopularPlantByBookmarks(string userId)
+    {
+        var plant = await _dbContext.Set<Plant>()
+            .Include(p => p.Author)
+            .Include(p => p.Likes)
+            .Include(p => p.Bookmarks)
+            .Include(p => p.Comments)
+            .ThenInclude(pc => pc.User)
+            .Include(p => p.Comments.OrderByDescending(c => c.CreatedAt))
+            .ThenInclude(pc => pc.Likes)
+            .OrderByDescending(p => p.Bookmarks.Count)
+            .FirstAsync();
+
+        var mapped = _mapper.Map<PlantDto>(plant);
+
+        return mapped;
+    }
+
+    public async Task<PlantDto> GetMostInteractedPlantByComments(string userId)
+    {
+        var plant = await _dbContext.Set<Plant>()
+            .Include(p => p.Author)
+            .Include(p => p.Likes)
+            .Include(p => p.Bookmarks)
+            .Include(p => p.Comments)
+            .ThenInclude(pc => pc.User)
+            .Include(p => p.Comments.OrderByDescending(c => c.CreatedAt))
+            .ThenInclude(pc => pc.Likes)
+            .OrderByDescending(p => p.Comments.Count)
+            .FirstAsync();
+
+        var mapped = _mapper.Map<PlantDto>(plant);
+
+        return mapped;
     }
 
     public async Task<bool> BookmarkPlant(Plant plant, User user)

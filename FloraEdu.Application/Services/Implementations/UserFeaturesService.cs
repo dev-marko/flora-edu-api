@@ -35,14 +35,24 @@ public class UserFeaturesService : IUserFeaturesService
         return user;
     }
 
-    public PagedList<PlantCardDto> GetBookmarkedPlants(User user, int page = 1, int pageSize = 10,
-        PlantType type = PlantType.Unknown)
+    public PagedList<PlantCardDto> GetBookmarkedPlants(User user, int page = 1, int pageSize = 8,
+        PlantType type = PlantType.Unknown, string? searchTerm = null)
     {
         var plants = user.BookmarkedPlants;
 
         if (type != PlantType.Unknown)
         {
             plants = plants.Where(p => p.Type == type).ToList();
+        }
+
+        if (!string.IsNullOrEmpty(searchTerm))
+        {
+            var normalizedSearchTerm = searchTerm.ToLower();
+            plants = plants.Where(p =>
+                p.Name.ToLower().Contains(normalizedSearchTerm) ||
+                (p.Author.FirstName != null && p.Author.FirstName.Contains(searchTerm)) ||
+                (p.Author.LastName != null && p.Author.LastName.Contains(searchTerm)) ||
+                p.Description.Contains(searchTerm)).ToList();
         }
 
         var plantCards = plants

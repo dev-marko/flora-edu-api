@@ -10,6 +10,8 @@ public interface IBlogService
 
     Task<PagedList<ArticleDto>> GetArticlesQuery(int page = 1, int pageSize = 10, string? searchTerm = null,
         User? user = null);
+    
+    Task<List<ArticleDto>> GetMostPopularArticlesGlobally(int take = 3, User? user = null);
 
     // Article Comments
     Task<ArticleComment?> GetArticleCommentById(Guid articleCommentId);

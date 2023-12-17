@@ -78,6 +78,34 @@ public class BlogService : BaseService<Article>, IBlogService
         return articleDtosPagedList;
     }
 
+    public Task<List<ArticleDto>> GetMostPopularArticlesGlobally(int take = 3, User? user = null)
+    {
+        var articles = _dbContext.Set<Article>().Include(a => a.Author).Include(a => a.Likes)
+            .Include(a => a.Bookmarks);
+
+        var articleDtos = articles
+            .Select(article => new ArticleDto
+            {
+                Id = article.Id,
+                Title = article.Title,
+                Subtitle = article.Subtitle,
+                ShortDescription = article.ShortDescription,
+                HeaderImageUrl = article.HeaderImageUrl,
+                Content = article.Content,
+                Author = _mapper.Map<AuthorDto>(article.Author),
+                IsBookmarked = CheckIfArticleIsBookmarked(article, user),
+                IsLiked = CheckIfArticleIsLiked(article, user),
+                LikeCount = article.Likes.Count,
+                CreatedAt = article.CreatedAt,
+                LastModified = article.LastModified
+            })
+            .OrderByDescending(a => a.LikeCount)
+            .Take(take)
+            .ToListAsync();
+
+        return articleDtos;
+    }
+
     public async Task<ArticleComment?> GetArticleCommentById(Guid articleCommentId)
     {
         var articleComment = await _dbContext.Set<ArticleComment>()

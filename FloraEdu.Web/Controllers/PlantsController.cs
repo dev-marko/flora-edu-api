@@ -6,6 +6,7 @@ using FloraEdu.Domain.Authorization;
 using FloraEdu.Domain.DataTransferObjects;
 using FloraEdu.Domain.DataTransferObjects.Plant;
 using FloraEdu.Domain.Entities;
+using FloraEdu.Domain.Enumerations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -40,9 +41,31 @@ public class PlantsController : ControllerBase
         if (userId is not null)
         {
             user = await _userService.FindByIdAsync(Guid.Parse(userId));
+            var test = await _plantService.GetMostPopularPlantByLikes(userId);
+            var test2 = await _plantService.GetMostPopularPlantByBookmarks(userId);
+            var test3 = await _plantService.GetMostInteractedPlantByComments(userId);
+            var test4 = await _plantService.GetMostPopularPlantsGlobally(3, user);
         }
 
-        var plants = await _plantService.GetPlantsQuery(requestDto.Page, requestDto.Size, requestDto.Type, user);
+        Enum.TryParse(requestDto.Type, out PlantType type);
+
+        var plants = await _plantService.GetPlantsQuery(requestDto.Page, requestDto.Size, type,
+            requestDto.SearchTerm, user);
+
+        return Results.Ok(plants);
+    }
+
+    [HttpGet("most-popular")]
+    public async Task<IResult> GetMostPopularPlants()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        User? user = null;
+        
+        if (userId is not null) {
+            user = await _userService.FindByIdAsync(Guid.Parse(userId));
+        }
+        
+        var plants = await _plantService.GetMostPopularPlantsGlobally(3, user);
 
         return Results.Ok(plants);
     }
@@ -65,8 +88,9 @@ public class PlantsController : ControllerBase
             return Results.NotFound();
         }
 
-        var plants = _userFeaturesService.GetBookmarkedPlants(user, requestDto.Page, requestDto.Size,
-            requestDto.Type);
+        Enum.TryParse(requestDto.Type, out PlantType type);
+
+        var plants = _userFeaturesService.GetBookmarkedPlants(user, requestDto.Page, requestDto.Size, type, requestDto.SearchTerm);
 
         return Results.Ok(plants);
     }
