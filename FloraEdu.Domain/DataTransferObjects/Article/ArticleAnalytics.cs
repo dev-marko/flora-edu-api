@@ -1,6 +1,6 @@
-﻿namespace FloraEdu.Domain.DataTransferObjects.Plant;
+﻿namespace FloraEdu.Domain.DataTransferObjects.Article;
 
-public class PlantAnalytics
+public class ArticleAnalytics
 {
     public string MostPopularByLikes { get; set; }
     public int MostPopularByLikesCount { get; set; }

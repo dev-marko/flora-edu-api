@@ -130,63 +130,9 @@ public class PlantService : BaseService<Plant>, IPlantService
         return plantCards;
     }
 
-    public async Task<PlantDto> GetMostPopularPlantByLikes(string userId)
+    public async Task<(string, int)> GetMostPopularPlantByLikes(string userId)
     {
-        var plant = await _dbContext.Set<Plant>()
-            .Include(p => p.Author)
-            .Include(p => p.Likes)
-            .Include(p => p.Bookmarks)
-            .Include(p => p.Comments)
-            .ThenInclude(pc => pc.User)
-            .Include(p => p.Comments.OrderByDescending(c => c.CreatedAt))
-            .ThenInclude(pc => pc.Likes)
-            .OrderByDescending(p => p.Likes.Count)
-            .FirstAsync();
-
-        var mapped = _mapper.Map<PlantDto>(plant);
-
-        return mapped;
-    }
-
-    public async Task<PlantDto> GetMostPopularPlantByBookmarks(string userId)
-    {
-        var plant = await _dbContext.Set<Plant>()
-            .Include(p => p.Author)
-            .Include(p => p.Likes)
-            .Include(p => p.Bookmarks)
-            .Include(p => p.Comments)
-            .ThenInclude(pc => pc.User)
-            .Include(p => p.Comments.OrderByDescending(c => c.CreatedAt))
-            .ThenInclude(pc => pc.Likes)
-            .OrderByDescending(p => p.Bookmarks.Count)
-            .FirstAsync();
-
-        var mapped = _mapper.Map<PlantDto>(plant);
-
-        return mapped;
-    }
-
-    public async Task<PlantDto> GetMostInteractedPlantByComments(string userId)
-    {
-        var plant = await _dbContext.Set<Plant>()
-            .Include(p => p.Author)
-            .Include(p => p.Likes)
-            .Include(p => p.Bookmarks)
-            .Include(p => p.Comments)
-            .ThenInclude(pc => pc.User)
-            .Include(p => p.Comments.OrderByDescending(c => c.CreatedAt))
-            .ThenInclude(pc => pc.Likes)
-            .OrderByDescending(p => p.Comments.Count)
-            .FirstAsync();
-
-        var mapped = _mapper.Map<PlantDto>(plant);
-
-        return mapped;
-    }
-
-    public async Task<PlantDto> GetMostPopularPlantByUniqueVisitors(string userId)
-    {
-        var plant = await _dbContext.Set<Plant>()
+        var plants = await _dbContext.Set<Plant>()
             .Include(p => p.Author)
             .Include(p => p.UniqueVisitors)
             .Include(p => p.Likes)
@@ -195,12 +141,105 @@ public class PlantService : BaseService<Plant>, IPlantService
             .ThenInclude(pc => pc.User)
             .Include(p => p.Comments.OrderByDescending(c => c.CreatedAt))
             .ThenInclude(pc => pc.Likes)
-            .OrderByDescending(p => p.UniqueVisitors.Count)
-            .FirstAsync();
+            .Where(a => a.Author.Id == userId)
+            .ToListAsync();
+
+        if (plants.Count == 0)
+        {
+            return (string.Empty, 0);
+        }
+
+        var plant = plants
+            .OrderByDescending(p => p.Likes.Count)
+            .First();
 
         var mapped = _mapper.Map<PlantDto>(plant);
 
-        return mapped;
+        return (mapped.Name!, mapped.LikeCount);
+    }
+
+    public async Task<(string, int)> GetMostPopularPlantByBookmarks(string userId)
+    {
+        var plants = await _dbContext.Set<Plant>()
+            .Include(p => p.Author)
+            .Include(p => p.UniqueVisitors)
+            .Include(p => p.Likes)
+            .Include(p => p.Bookmarks)
+            .Include(p => p.Comments)
+            .ThenInclude(pc => pc.User)
+            .Include(p => p.Comments.OrderByDescending(c => c.CreatedAt))
+            .ThenInclude(pc => pc.Likes)
+            .Where(a => a.Author.Id == userId)
+            .ToListAsync();
+
+        if (plants.Count == 0)
+        {
+            return (string.Empty, 0);
+        }
+
+        var plant = plants
+            .OrderByDescending(p => p.Bookmarks.Count)
+            .First();
+
+        var mapped = _mapper.Map<PlantDto>(plant);
+
+        return (mapped.Name!, mapped.BookmarkCount);
+    }
+
+    public async Task<(string, int)> GetMostInteractedPlantByComments(string userId)
+    {
+        var plants = await _dbContext.Set<Plant>()
+            .Include(p => p.Author)
+            .Include(p => p.UniqueVisitors)
+            .Include(p => p.Likes)
+            .Include(p => p.Bookmarks)
+            .Include(p => p.Comments)
+            .ThenInclude(pc => pc.User)
+            .Include(p => p.Comments.OrderByDescending(c => c.CreatedAt))
+            .ThenInclude(pc => pc.Likes)
+            .Where(a => a.Author.Id == userId)
+            .ToListAsync();
+
+        if (plants.Count == 0)
+        {
+            return (string.Empty, 0);
+        }
+
+        var plant = plants
+            .OrderByDescending(p => p.Comments.Count)
+            .First();
+
+        var mapped = _mapper.Map<PlantDto>(plant);
+
+        return (mapped.Name!, mapped.CommentCount);
+    }
+
+    public async Task<(string, int)> GetMostPopularPlantByUniqueVisitors(string userId)
+    {
+        var plants = await _dbContext.Set<Plant>()
+            .Include(p => p.Author)
+            .Include(p => p.UniqueVisitors)
+            .Include(p => p.Likes)
+            .Include(p => p.Bookmarks)
+            .Include(p => p.Comments)
+            .ThenInclude(pc => pc.User)
+            .Include(p => p.Comments.OrderByDescending(c => c.CreatedAt))
+            .ThenInclude(pc => pc.Likes)
+            .Where(a => a.Author.Id == userId)
+            .ToListAsync();
+
+        if (plants.Count == 0)
+        {
+            return (string.Empty, 0);
+        }
+
+        var plant = plants
+            .OrderByDescending(p => p.UniqueVisitors.Count)
+            .First();
+
+        var mapped = _mapper.Map<PlantDto>(plant);
+
+        return (mapped.Name!, mapped.VisitorsCount);
     }
 
     public async Task<bool> BookmarkPlant(Plant plant, User user)

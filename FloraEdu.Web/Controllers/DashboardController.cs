@@ -3,6 +3,7 @@ using AutoMapper;
 using FloraEdu.Application.Authentication.Interfaces;
 using FloraEdu.Application.Services.Interfaces;
 using FloraEdu.Domain.Authorization;
+using FloraEdu.Domain.DataTransferObjects.Article;
 using FloraEdu.Domain.DataTransferObjects.Plant;
 using FloraEdu.Domain.Enumerations;
 using Microsoft.AspNetCore.Authorization;
@@ -60,7 +61,6 @@ public class DashboardController : ControllerBase
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userId is null) return Results.Unauthorized();
-        var user = await _userService.FindByIdAsync(Guid.Parse(userId));
 
         var mostPopularByLikes = await _plantService.GetMostPopularPlantByLikes(userId);
         var mostPopularByBookmarks = await _plantService.GetMostPopularPlantByBookmarks(userId);
@@ -69,13 +69,43 @@ public class DashboardController : ControllerBase
 
         var plantAnalytics = new PlantAnalytics
         {
-            MostPopularByLikes = mostPopularByLikes.Name ?? "",
-            MostPopularByBookmarks = mostPopularByBookmarks.Name ?? "",
-            MostPopularByNumberOfComments = mostPopularByNumberOfComments.Name ?? "",
-            MostPopularByUniqueVisitors = mostPopularByUniqueVisitors.Name ?? ""
+            MostPopularByLikes = mostPopularByLikes.Item1,
+            MostPopularByLikesCount = mostPopularByLikes.Item2,
+            MostPopularByBookmarks = mostPopularByBookmarks.Item1,
+            MostPopularByBookmarksCount = mostPopularByBookmarks.Item2,
+            MostPopularByNumberOfComments = mostPopularByNumberOfComments.Item1,
+            MostPopularByNumberOfCommentsCount = mostPopularByNumberOfComments.Item2,
+            MostPopularByUniqueVisitors = mostPopularByUniqueVisitors.Item1,
+            MostPopularByUniqueVisitorsCount = mostPopularByUniqueVisitors.Item2
         };
 
         return Results.Ok(plantAnalytics);
+    }
+
+    [HttpGet("article-analytics")]
+    public async Task<IResult> GetArticleAnalyticsByCreator()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userId is null) return Results.Unauthorized();
+
+        var mostPopularByLikes = await _blogService.GetMostPopularArticleByLikes(userId);
+        var mostPopularByBookmarks = await _blogService.GetMostPopularArticleByBookmarks(userId);
+        var mostPopularByNumberOfComments = await _blogService.GetMostInteractedArticleByComments(userId);
+        var mostPopularByUniqueVisitors = await _blogService.GetMostPopularArticleByUniqueVisitors(userId);
+
+        var articleAnalytics = new ArticleAnalytics
+        {
+            MostPopularByLikes = mostPopularByLikes.Item1,
+            MostPopularByLikesCount = mostPopularByLikes.Item2,
+            MostPopularByBookmarks = mostPopularByBookmarks.Item1,
+            MostPopularByBookmarksCount = mostPopularByBookmarks.Item2,
+            MostPopularByNumberOfComments = mostPopularByNumberOfComments.Item1,
+            MostPopularByNumberOfCommentsCount = mostPopularByNumberOfComments.Item2,
+            MostPopularByUniqueVisitors = mostPopularByUniqueVisitors.Item1,
+            MostPopularByUniqueVisitorsCount = mostPopularByUniqueVisitors.Item2
+        };
+
+        return Results.Ok(articleAnalytics);
     }
 
     [HttpPut("plants")]

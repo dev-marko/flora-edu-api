@@ -15,4 +15,5 @@ public class PlantDto : BaseDto
     public bool IsBookmarked { get; set; }
     public List<PlantCommentDto> Comments { get; set; } = new();
     public int CommentCount { get; set; }
+    public int VisitorsCount { get; set; }
 }

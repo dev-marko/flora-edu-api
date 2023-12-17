@@ -10,15 +10,21 @@ public interface IBlogService
 
     Task<PagedList<ArticleDto>> GetArticlesQuery(int page = 1, int pageSize = 10, string? searchTerm = null,
         User? user = null);
-    
+
     Task<List<ArticleDto>> GetMostPopularArticlesGlobally(int take = 3, User? user = null);
 
+    Task<bool> LikeArticle(Article article, User user);
+    Task<bool> BookmarkArticle(Article article, User user);
     void RegisterUniqueVisitor(Guid uuaid, Guid articleId, string? userId);
+
+    // Specialist Analytics
+    Task<(string, int)> GetMostPopularArticleByLikes(string userId);
+    Task<(string, int)> GetMostPopularArticleByBookmarks(string userId);
+    Task<(string, int)> GetMostInteractedArticleByComments(string userId);
+    Task<(string, int)> GetMostPopularArticleByUniqueVisitors(string userId);
 
     // Article Comments
     Task<ArticleComment?> GetArticleCommentById(Guid articleCommentId);
     Task<bool> AddNewComment(User user, Guid articleId, string content);
-    Task<bool> LikeArticle(Article article, User user);
     Task<bool> LikeArticleComment(ArticleComment articleComment, User user);
-    Task<bool> BookmarkArticle(Article article, User user);
 }
