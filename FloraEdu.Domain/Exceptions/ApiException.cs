@@ -21,7 +21,7 @@ public static class ApiExceptionExtension
         { ErrorCodes.InternalServerError, HttpStatusCode.InternalServerError },
         { ErrorCodes.OperationFailed, HttpStatusCode.InternalServerError },
 
-        { ErrorCodes.UserNotFound, HttpStatusCode.NotFound },
+        { ErrorCodes.UserNonExistant, HttpStatusCode.BadRequest },
         { ErrorCodes.UserExists, HttpStatusCode.Conflict },
         { ErrorCodes.PasswordMismatch, HttpStatusCode.BadRequest }
     };

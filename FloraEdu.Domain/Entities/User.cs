@@ -16,4 +16,6 @@ public class User : IdentityUser
     public List<Article> AuthoredArticles { get; set; } = new();
     public List<Article> LikedArticles { get; set; } = new();
     public List<Article> BookmarkedArticles { get; set; } = new();
+    public List<PlantComment> LikedPlantComments { get; set; } = new();
+    public List<ArticleComment> LikedArticleComments { get; set; } = new();
 }

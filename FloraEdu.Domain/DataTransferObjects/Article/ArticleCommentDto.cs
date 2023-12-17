@@ -1,8 +1,8 @@
-﻿namespace FloraEdu.Domain.DataTransferObjects.Plant;
+﻿namespace FloraEdu.Domain.DataTransferObjects.Article;
 
-public class PlantCommentDto : BaseDto
+public class ArticleCommentDto : BaseDto
 {
-    public Guid PlantId { get; set; }
+    public Guid ArticleId { get; set; }
     public required CommentUserInfoDto User { get; set; }
     public required string Content { get; set; }
     public required bool IsLiked { get; set; }

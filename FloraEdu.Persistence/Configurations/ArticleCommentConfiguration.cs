@@ -11,5 +11,13 @@ public class ArticleCommentConfiguration : BaseEntityConfiguration<ArticleCommen
         base.Configure(builder);
 
         builder.ToTable("ArticleComments");
+
+        builder
+            .HasOne(articleComment => articleComment.User);
+
+        builder
+            .HasMany(articleComment => articleComment.Likes)
+            .WithMany(user => user.LikedArticleComments)
+            .UsingEntity(join => join.ToTable("ArticleCommentLikes"));
     }
 }

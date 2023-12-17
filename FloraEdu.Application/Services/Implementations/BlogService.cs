@@ -25,7 +25,15 @@ public class BlogService : BaseService<Article>, IBlogService
 
     public async Task<Article?> GetArticleById(Guid id)
     {
-        var entity = await _dbContext.Set<Article>().Include(p => p.Author).FirstOrDefaultAsync(p => p.Id == id);
+        var entity = await _dbContext.Set<Article>()
+            .Include(a => a.Author)
+            .Include(a => a.Likes)
+            .Include(a => a.Bookmarks)
+            .Include(a => a.Comments)
+            .ThenInclude(ac => ac.User)
+            .Include(a => a.Comments.OrderByDescending(c => c.CreatedAt))
+            .ThenInclude(ac => ac.Likes)
+            .FirstOrDefaultAsync(a => a.Id == id);
 
         if (entity is null) _logger.LogError("Entity with ID: {id} not found", id);
 
@@ -60,6 +68,7 @@ public class BlogService : BaseService<Article>, IBlogService
                 Author = _mapper.Map<AuthorDto>(article.Author),
                 IsBookmarked = CheckIfArticleIsBookmarked(article, user),
                 IsLiked = CheckIfArticleIsLiked(article, user),
+                LikeCount = article.Likes.Count,
                 CreatedAt = article.CreatedAt,
                 LastModified = article.LastModified
             });
@@ -67,6 +76,68 @@ public class BlogService : BaseService<Article>, IBlogService
         var articleDtosPagedList = await PagedList<ArticleDto>.CreateAsync(articleDtos, page, pageSize);
 
         return articleDtosPagedList;
+    }
+
+    public async Task<ArticleComment?> GetArticleCommentById(Guid articleCommentId)
+    {
+        var articleComment = await _dbContext.Set<ArticleComment>()
+            .Include(pc => pc.Likes)
+            .FirstOrDefaultAsync(p => p.Id == articleCommentId);
+
+        if (articleComment is null) _logger.LogError("ArticleComment with ID: {id} not found", articleCommentId);
+
+        return articleComment;
+    }
+
+    public async Task<bool> AddNewComment(User user, Guid articleId, string content)
+    {
+        var article = await GetArticleById(articleId);
+
+        var newComment = new ArticleComment
+        {
+            Article = article!,
+            UserId = user.Id,
+            User = user,
+            Content = content,
+        };
+
+        article!.Comments.Add(newComment);
+
+        var res = await _dbContext.SaveChangesAsync();
+
+        return res > 0;
+    }
+
+    public async Task<bool> LikeArticleComment(ArticleComment articleComment, User user)
+    {
+        articleComment.Likes.Add(user);
+        var res = await _dbContext.SaveChangesAsync();
+
+        return res > 0;
+    }
+
+    public async Task<bool> UnlikeArticleComment(ArticleComment articleComment, User user)
+    {
+        articleComment.Likes.Remove(user);
+        var res = await _dbContext.SaveChangesAsync();
+
+        return res > 0;
+    }
+
+    public async Task<bool> LikeArticle(Article article, User user)
+    {
+        article.Likes.Add(user);
+        var res = await _dbContext.SaveChangesAsync();
+
+        return res > 0;
+    }
+
+    public async Task<bool> UnlikeArticle(Article article, User user)
+    {
+        article.Likes.Remove(user);
+        var res = await _dbContext.SaveChangesAsync();
+
+        return res > 0;
     }
 
     private static bool CheckIfArticleIsBookmarked(Article article, User? user)

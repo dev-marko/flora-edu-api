@@ -7,7 +7,7 @@ public static class ErrorCodes
     public const string InternalServerError = nameof(InternalServerError);
     public const string OperationFailed = nameof(OperationFailed);
 
-    public const string UserNotFound = nameof(UserNotFound);
+    public const string UserNonExistant = nameof(UserNonExistant);
     public const string UserExists = nameof(UserExists);
     public const string PasswordMismatch = nameof(PasswordMismatch);
 }

@@ -29,5 +29,15 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMany(user => user.BookmarkedArticles)
             .WithMany(article => article.Bookmarks)
             .UsingEntity(join => join.ToTable("UserArticleBookmarks"));
+
+        builder
+            .HasMany(user => user.LikedPlantComments)
+            .WithMany(plantComment => plantComment.Likes)
+            .UsingEntity(join => join.ToTable("PlantCommentLikes"));
+
+        builder
+            .HasMany(user => user.LikedArticleComments)
+            .WithMany(articleComment => articleComment.Likes)
+            .UsingEntity(join => join.ToTable("ArticleCommentLikes"));
     }
 }

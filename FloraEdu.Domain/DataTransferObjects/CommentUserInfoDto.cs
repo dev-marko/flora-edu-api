@@ -1,9 +1,9 @@
 ﻿namespace FloraEdu.Domain.DataTransferObjects;
 
-public class AuthorDto : BaseDto
+public class CommentUserInfoDto : BaseDto
 {
+    public required string UserName { get; set; }
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
-    public string? AuthorBiography { get; set; }
     public string? AvatarImageUrl { get; set; }
 }
