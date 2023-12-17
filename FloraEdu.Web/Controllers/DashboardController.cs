@@ -4,7 +4,6 @@ using FloraEdu.Application.Authentication.Interfaces;
 using FloraEdu.Application.Services.Interfaces;
 using FloraEdu.Domain.Authorization;
 using FloraEdu.Domain.DataTransferObjects.Plant;
-using FloraEdu.Domain.Entities;
 using FloraEdu.Domain.Enumerations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,12 +15,15 @@ namespace FloraEdu.Web.Controllers;
 [Authorize(AuthorizationPolicies.AdminOrSpecialist)]
 public class DashboardController : ControllerBase
 {
+    private readonly IBlogService _blogService;
     private readonly IPlantService _plantService;
     private readonly IUserService _userService;
     private readonly IMapper _mapper;
 
-    public DashboardController(IPlantService plantService, IUserService userService, IMapper mapper)
+    public DashboardController(IPlantService plantService, IUserService userService, IMapper mapper,
+        IBlogService blogService)
     {
+        _blogService = blogService;
         _plantService = plantService;
         _userService = userService;
         _mapper = mapper;
@@ -51,6 +53,29 @@ public class DashboardController : ControllerBase
         var mappedPlant = _mapper.Map<PlantDto>(plant);
 
         return Results.Ok(mappedPlant);
+    }
+
+    [HttpGet("plant-analytics")]
+    public async Task<IResult> GetPlantAnalyticsByCreator()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userId is null) return Results.Unauthorized();
+        var user = await _userService.FindByIdAsync(Guid.Parse(userId));
+
+        var mostPopularByLikes = await _plantService.GetMostPopularPlantByLikes(userId);
+        var mostPopularByBookmarks = await _plantService.GetMostPopularPlantByBookmarks(userId);
+        var mostPopularByNumberOfComments = await _plantService.GetMostInteractedPlantByComments(userId);
+        var mostPopularByUniqueVisitors = await _plantService.GetMostPopularPlantByUniqueVisitors(userId);
+
+        var plantAnalytics = new PlantAnalytics
+        {
+            MostPopularByLikes = mostPopularByLikes.Name ?? "",
+            MostPopularByBookmarks = mostPopularByBookmarks.Name ?? "",
+            MostPopularByNumberOfComments = mostPopularByNumberOfComments.Name ?? "",
+            MostPopularByUniqueVisitors = mostPopularByUniqueVisitors.Name ?? ""
+        };
+
+        return Results.Ok(plantAnalytics);
     }
 
     [HttpPut("plants")]

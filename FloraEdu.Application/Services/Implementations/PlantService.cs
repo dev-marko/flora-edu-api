@@ -12,6 +12,7 @@ namespace FloraEdu.Application.Services.Implementations;
 
 public class PlantService : BaseService<Plant>, IPlantService
 {
+    private readonly object _registerUniqueUserLock = new();
     private readonly ApplicationDbContext _dbContext;
     private readonly IMapper _mapper;
     private readonly ILogger<Plant> _logger;
@@ -183,6 +184,25 @@ public class PlantService : BaseService<Plant>, IPlantService
         return mapped;
     }
 
+    public async Task<PlantDto> GetMostPopularPlantByUniqueVisitors(string userId)
+    {
+        var plant = await _dbContext.Set<Plant>()
+            .Include(p => p.Author)
+            .Include(p => p.UniqueVisitors)
+            .Include(p => p.Likes)
+            .Include(p => p.Bookmarks)
+            .Include(p => p.Comments)
+            .ThenInclude(pc => pc.User)
+            .Include(p => p.Comments.OrderByDescending(c => c.CreatedAt))
+            .ThenInclude(pc => pc.Likes)
+            .OrderByDescending(p => p.UniqueVisitors.Count)
+            .FirstAsync();
+
+        var mapped = _mapper.Map<PlantDto>(plant);
+
+        return mapped;
+    }
+
     public async Task<bool> BookmarkPlant(Plant plant, User user)
     {
         if (!plant.Bookmarks.Contains(user))
@@ -243,6 +263,32 @@ public class PlantService : BaseService<Plant>, IPlantService
         var res = await _dbContext.SaveChangesAsync();
 
         return res > 0;
+    }
+
+    public void RegisterUniqueVisitor(Guid uuaid, Guid plantId, string? userId)
+    {
+        lock (_registerUniqueUserLock)
+        {
+            var plantVisitors = _dbContext.Set<UniquePlantVisitor>();
+            var userAlreadyRegistered = plantVisitors.Any(a => a.UserId == userId || a.UUAID == uuaid);
+
+            if (userAlreadyRegistered)
+            {
+                return;
+            }
+
+            var newUniqueVisitor = new UniquePlantVisitor
+            {
+                UUAID = uuaid,
+                PlantId = plantId,
+                UserId = userId,
+                IsAnonymous = userId is null
+            };
+
+            plantVisitors.Add(newUniqueVisitor);
+
+            _dbContext.SaveChanges();
+        }
     }
 
     public async Task<bool> CheckIfPlantCommentIsLiked(Guid plantCommentId, User user)
