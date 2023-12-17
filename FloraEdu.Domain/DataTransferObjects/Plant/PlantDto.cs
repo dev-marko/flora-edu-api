@@ -11,6 +11,8 @@ public class PlantDto : BaseDto
     public AuthorDto Author { get; set; }
     public int LikeCount { get; set; }
     public bool IsLiked { get; set; }
+    public int BookmarkCount { get; set; }
     public bool IsBookmarked { get; set; }
     public List<PlantCommentDto> Comments { get; set; } = new();
+    public int CommentCount { get; set; }
 }

@@ -6,7 +6,9 @@ using FloraEdu.Domain.Authorization;
 using FloraEdu.Domain.DataTransferObjects;
 using FloraEdu.Domain.DataTransferObjects.Plant;
 using FloraEdu.Domain.Entities;
+using FloraEdu.Domain.Enumerations;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FloraEdu.Web.Controllers;
@@ -17,13 +19,16 @@ public class PlantsController : ControllerBase
 {
     private readonly IPlantService _plantService;
     private readonly IUserService _userService;
+    private readonly IUserFeaturesService _userFeaturesService;
     private readonly IMapper _mapper;
 
-    public PlantsController(IPlantService plantService, IUserService userService, IMapper mapper)
+    public PlantsController(IPlantService plantService, IUserService userService, IMapper mapper,
+        IUserFeaturesService userFeaturesService)
     {
         _plantService = plantService;
         _userService = userService;
         _mapper = mapper;
+        _userFeaturesService = userFeaturesService;
     }
 
     [HttpGet]
@@ -36,9 +41,56 @@ public class PlantsController : ControllerBase
         if (userId is not null)
         {
             user = await _userService.FindByIdAsync(Guid.Parse(userId));
+            var test = await _plantService.GetMostPopularPlantByLikes(userId);
+            var test2 = await _plantService.GetMostPopularPlantByBookmarks(userId);
+            var test3 = await _plantService.GetMostInteractedPlantByComments(userId);
+            var test4 = await _plantService.GetMostPopularPlantsGlobally(3, user);
         }
 
-        var plants = await _plantService.GetPlantsQuery(requestDto.Page, requestDto.Size, requestDto.Type, user);
+        Enum.TryParse(requestDto.Type, out PlantType type);
+
+        var plants = await _plantService.GetPlantsQuery(requestDto.Page, requestDto.Size, type,
+            requestDto.SearchTerm, user);
+
+        return Results.Ok(plants);
+    }
+
+    [HttpGet("most-popular")]
+    public async Task<IResult> GetMostPopularPlants()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        User? user = null;
+        
+        if (userId is not null) {
+            user = await _userService.FindByIdAsync(Guid.Parse(userId));
+        }
+        
+        var plants = await _plantService.GetMostPopularPlantsGlobally(3, user);
+
+        return Results.Ok(plants);
+    }
+
+    [HttpGet("bookmarks")]
+    [Authorize(AuthorizationPolicies.Authenticated)]
+    public async Task<IResult> GetBookmarkedPlants([FromQuery] PlantsRequestDto requestDto)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userId is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var user = await _userFeaturesService.GetUser(userId);
+
+        if (user is null)
+        {
+            return Results.NotFound();
+        }
+
+        Enum.TryParse(requestDto.Type, out PlantType type);
+
+        var plants = _userFeaturesService.GetBookmarkedPlants(user, requestDto.Page, requestDto.Size, type, requestDto.SearchTerm);
 
         return Results.Ok(plants);
     }
@@ -96,18 +148,17 @@ public class PlantsController : ControllerBase
         return res ? Results.Ok() : Results.BadRequest();
     }
 
-    [HttpPost("unlike-plant")]
+    [HttpPost("bookmark")]
     [Authorize(AuthorizationPolicies.Authenticated)]
-    public async Task<IResult> UnlikePlant([FromBody] Guid plantId)
+    public async Task<IResult> BookmarkPlant([FromBody] Guid plantId)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
         var user = await _userService.FindByIdAsync(Guid.Parse(userId!));
 
         var plant = await _plantService.GetPlantById(plantId);
         if (plant is null) return Results.NotFound();
 
-        var res = await _plantService.UnlikePlant(plant, user);
+        var res = await _plantService.BookmarkPlant(plant, user);
 
         return res ? Results.Ok() : Results.BadRequest();
     }
@@ -139,22 +190,6 @@ public class PlantsController : ControllerBase
         if (plantComment is null) return Results.NotFound();
 
         var res = await _plantService.LikePlantComment(plantComment, user);
-
-        return res ? Results.Ok() : Results.BadRequest();
-    }
-
-    [HttpPost("unlike-comment")]
-    [Authorize(AuthorizationPolicies.Authenticated)]
-    public async Task<IResult> UnlikePlantComment([FromBody] Guid plantCommentId)
-    {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        var user = await _userService.FindByIdAsync(Guid.Parse(userId!));
-
-        var plantComment = await _plantService.GetPlantCommentById(plantCommentId);
-        if (plantComment is null) return Results.NotFound();
-
-        var res = await _plantService.UnlikePlantComment(plantComment, user);
 
         return res ? Results.Ok() : Results.BadRequest();
     }

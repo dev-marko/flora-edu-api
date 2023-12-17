@@ -78,6 +78,34 @@ public class BlogService : BaseService<Article>, IBlogService
         return articleDtosPagedList;
     }
 
+    public Task<List<ArticleDto>> GetMostPopularArticlesGlobally(int take = 3, User? user = null)
+    {
+        var articles = _dbContext.Set<Article>().Include(a => a.Author).Include(a => a.Likes)
+            .Include(a => a.Bookmarks);
+
+        var articleDtos = articles
+            .Select(article => new ArticleDto
+            {
+                Id = article.Id,
+                Title = article.Title,
+                Subtitle = article.Subtitle,
+                ShortDescription = article.ShortDescription,
+                HeaderImageUrl = article.HeaderImageUrl,
+                Content = article.Content,
+                Author = _mapper.Map<AuthorDto>(article.Author),
+                IsBookmarked = CheckIfArticleIsBookmarked(article, user),
+                IsLiked = CheckIfArticleIsLiked(article, user),
+                LikeCount = article.Likes.Count,
+                CreatedAt = article.CreatedAt,
+                LastModified = article.LastModified
+            })
+            .OrderByDescending(a => a.LikeCount)
+            .Take(take)
+            .ToListAsync();
+
+        return articleDtos;
+    }
+
     public async Task<ArticleComment?> GetArticleCommentById(Guid articleCommentId)
     {
         var articleComment = await _dbContext.Set<ArticleComment>()
@@ -108,33 +136,49 @@ public class BlogService : BaseService<Article>, IBlogService
         return res > 0;
     }
 
-    public async Task<bool> LikeArticleComment(ArticleComment articleComment, User user)
-    {
-        articleComment.Likes.Add(user);
-        var res = await _dbContext.SaveChangesAsync();
-
-        return res > 0;
-    }
-
-    public async Task<bool> UnlikeArticleComment(ArticleComment articleComment, User user)
-    {
-        articleComment.Likes.Remove(user);
-        var res = await _dbContext.SaveChangesAsync();
-
-        return res > 0;
-    }
-
     public async Task<bool> LikeArticle(Article article, User user)
     {
-        article.Likes.Add(user);
+        if (!article.Likes.Contains(user))
+        {
+            article.Likes.Add(user);
+        }
+        else
+        {
+            article.Likes.Remove(user);
+        }
+
         var res = await _dbContext.SaveChangesAsync();
 
         return res > 0;
     }
 
-    public async Task<bool> UnlikeArticle(Article article, User user)
+    public async Task<bool> LikeArticleComment(ArticleComment articleComment, User user)
     {
-        article.Likes.Remove(user);
+        if (!articleComment.Likes.Contains(user))
+        {
+            articleComment.Likes.Add(user);
+        }
+        else
+        {
+            articleComment.Likes.Remove(user);
+        }
+
+        var res = await _dbContext.SaveChangesAsync();
+
+        return res > 0;
+    }
+
+    public async Task<bool> BookmarkArticle(Article article, User user)
+    {
+        if (!article.Bookmarks.Contains(user))
+        {
+            article.Bookmarks.Add(user);
+        }
+        else
+        {
+            article.Bookmarks.Remove(user);
+        }
+
         var res = await _dbContext.SaveChangesAsync();
 
         return res > 0;

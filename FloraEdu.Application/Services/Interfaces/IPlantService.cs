@@ -8,20 +8,24 @@ namespace FloraEdu.Application.Services.Interfaces;
 public interface IPlantService : IService<Plant>
 {
     Task<Plant?> GetPlantById(Guid id);
-    Task<PagedList<PlantCardDto>> GetPlantsByCreator(User user, int page = 1, int pageSize = 10);
+    Task<PagedList<PlantCardDto>> GetPlantsByCreator(User user, int page = 1, int pageSize = 8);
 
-    Task<PagedList<PlantCardDto>> GetPlantsQuery(int page = 1, int pageSize = 10, PlantType type = PlantType.Unknown,
+    Task<PagedList<PlantCardDto>> GetPlantsQuery(int page = 1, int pageSize = 8, PlantType type = PlantType.Unknown,
+        string? searchTerm = null,
         User? user = null);
 
-    Task<List<PlantDto>> QueryPlantByName(string name);
-    Task<List<PlantDto>> GetAllByType(PlantType type);
+    Task<List<PlantCardDto>> GetMostPopularPlantsGlobally(int take = 3, User? user = null);
+
+    // Specialist Analytics
+    Task<PlantDto> GetMostPopularPlantByLikes(string userId);
+    Task<PlantDto> GetMostPopularPlantByBookmarks(string userId);
+    Task<PlantDto> GetMostInteractedPlantByComments(string userId);
 
     Task<bool> LikePlant(Plant plant, User user);
-    Task<bool> UnlikePlant(Plant plant, User user);
+    Task<bool> BookmarkPlant(Plant plant, User user);
 
     // Plant Comments
     Task<PlantComment?> GetPlantCommentById(Guid plantCommentId);
     Task<bool> AddNewComment(User user, Guid plantId, string content);
     Task<bool> LikePlantComment(PlantComment plantComment, User user);
-    Task<bool> UnlikePlantComment(PlantComment plantComment, User user);
 }

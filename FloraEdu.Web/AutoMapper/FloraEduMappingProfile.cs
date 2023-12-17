@@ -13,6 +13,9 @@ public class FloraEduMappingProfile : Profile
         // Plant
         CreateMap<Plant, PlantDto>()
             .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type.ToString()))
+            .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(src => src.Likes.Count))
+            .ForMember(dest => dest.BookmarkCount, opt => opt.MapFrom(src => src.Bookmarks.Count))
+            .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(src => src.Comments.Count))
             .ReverseMap();
 
         CreateMap<Plant, PlantCardDto>()
@@ -29,7 +32,11 @@ public class FloraEduMappingProfile : Profile
         CreateMap<User, UserInfo>();
 
         // Blog
-        CreateMap<Article, ArticleDto>();
+        CreateMap<Article, ArticleDto>()
+            .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(src => src.Likes.Count))
+            .ForMember(dest => dest.BookmarkCount, opt => opt.MapFrom(src => src.Bookmarks.Count))
+            .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(src => src.Comments.Count));
+
         CreateMap<ArticleComment, ArticleCommentDto>()
             .ForMember(dest => dest.ArticleId, opt => opt.MapFrom(src => src.ArticleId))
             .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(src => src.Likes.Count))

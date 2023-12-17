@@ -64,6 +64,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddScoped<IJwtProvider, JwtProvider>();
 builder.Services.AddScoped<IPlantService, PlantService>();
 builder.Services.AddScoped<IBlogService, BlogService>();
+builder.Services.AddScoped<IUserFeaturesService, UserFeaturesService>();
 
 // Register validators
 builder.Services.AddScoped<IValidator<PlantCreateOrUpdateDto>, PlantDtoValidator>();
