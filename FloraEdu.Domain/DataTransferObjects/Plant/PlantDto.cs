@@ -4,6 +4,8 @@ public class PlantDto : BaseDto
 {
     public string? Name { get; set; }
     public string? Type { get; set; }
+    public string? ThumbnailImageUrl { get; set; }
+    public List<string> HeaderImageUrls { get; set; } = new();
     public string? Description { get; set; }
     public string? Predispositions { get; set; }
     public string? Planting { get; set; }

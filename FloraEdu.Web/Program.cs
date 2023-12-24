@@ -65,6 +65,7 @@ builder.Services.AddScoped<IJwtProvider, JwtProvider>();
 builder.Services.AddScoped<IPlantService, PlantService>();
 builder.Services.AddScoped<IBlogService, BlogService>();
 builder.Services.AddScoped<IUserFeaturesService, UserFeaturesService>();
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
 // Register validators
 builder.Services.AddScoped<IValidator<PlantCreateOrUpdateDto>, PlantDtoValidator>();

@@ -29,6 +29,7 @@ public class PlantService : BaseService<Plant>, IPlantService
     {
         var entity = await _dbContext.Set<Plant>()
             .Include(p => p.Author)
+            .Include(p => p.PlantImage)
             .Include(p => p.Likes)
             .Include(p => p.Bookmarks)
             .Include(p => p.Comments)
@@ -70,7 +71,8 @@ public class PlantService : BaseService<Plant>, IPlantService
     public async Task<PagedList<PlantCardDto>> GetPlantsQuery(int page = 1, int pageSize = 8,
         PlantType type = PlantType.Unknown, string? searchTerm = null, User? user = null)
     {
-        IQueryable<Plant> plants = _dbContext.Set<Plant>().Include(p => p.Likes).Include(p => p.Bookmarks);
+        IQueryable<Plant> plants = _dbContext.Set<Plant>().Include(p => p.Likes).Include(p => p.Bookmarks)
+            .Include(p => p.PlantImage);
 
         if (type != PlantType.Unknown)
         {
@@ -94,6 +96,7 @@ public class PlantService : BaseService<Plant>, IPlantService
                 Name = plant.Name,
                 Type = plant.Type.ToString(),
                 Description = plant.Description,
+                ThumbnailImageUrl = plant.PlantImage!.ThumbnailImageUrl,
                 CreatedAt = plant.CreatedAt,
                 LastModified = plant.LastModified,
                 IsBookmarked = CheckIfPlantIsBookmarked(plant, user),
@@ -309,7 +312,8 @@ public class PlantService : BaseService<Plant>, IPlantService
         lock (_registerUniqueUserLock)
         {
             var plantVisitors = _dbContext.Set<UniquePlantVisitor>();
-            var userAlreadyRegistered = plantVisitors.Any(a => a.UserId == userId || a.UUAID == uuaid);
+            var userAlreadyRegistered = plantVisitors.Any(visitor =>
+                (visitor.UserId == userId || visitor.UUAID == uuaid) && visitor.PlantId == plantId);
 
             if (userAlreadyRegistered)
             {
