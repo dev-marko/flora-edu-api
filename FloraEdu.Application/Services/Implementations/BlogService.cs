@@ -348,6 +348,33 @@ public class BlogService : BaseService<Article>, IBlogService
         return articleBookmarksChartData;
     }
 
+    public async Task<PagedList<ArticleDto>> GetArticlesByCreator(User user, int page, int pageSize)
+    {
+        var articles = _dbContext.Set<Article>().Include(a => a.Author)
+            .Where(a => a.Author.Id == user.Id);
+
+
+        var articleDtos = articles
+            .Select(article => new ArticleDto
+            {
+                Id = article.Id,
+                Title = article.Title,
+                Subtitle = article.Subtitle,
+                ShortDescription = article.ShortDescription,
+                HeaderImageUrl = article.HeaderImageUrl,
+                Content = article.Content,
+                CreatedAt = article.CreatedAt,
+                LastModified = article.LastModified,
+                IsBookmarked = false,
+                IsLiked = false
+            })
+            .OrderByDescending(a => a.LastModified);
+
+        var articleDtosPagedList = await PagedList<ArticleDto>.CreateAsync(articleDtos, page, pageSize);
+
+        return articleDtosPagedList;
+    }
+
     public async Task<bool> BookmarkArticle(Article article, User user)
     {
         if (!article.Bookmarks.Contains(user))

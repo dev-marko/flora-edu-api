@@ -16,5 +16,7 @@ public class ArticleConfiguration : BaseEntityConfiguration<Article>
             .HasOne(a => a.Author)
             .WithMany(a => a.AuthoredArticles)
             .HasForeignKey("AuthorId");
+        
+        builder.HasQueryFilter(a => !a.IsDeleted);
     }
 }

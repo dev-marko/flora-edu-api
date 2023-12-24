@@ -44,6 +44,26 @@ public class DashboardController : ControllerBase
         return Results.Ok(plants);
     }
 
+    [HttpGet("articles")]
+    public async Task<IResult> GetArticles([FromQuery] ArticlesRequestDto requestDto)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user = await _userService.FindByIdAsync(Guid.Parse(userId!));
+        var articles = await _blogService.GetArticlesByCreator(user, requestDto.Page, requestDto.Size);
+
+        return Results.Ok(articles);
+    }
+
+    [HttpGet("articles/{articleId:guid}")]
+    public async Task<IResult> GetArticleById(Guid articleId)
+    {
+        var article = await _blogService.GetArticleById(articleId);
+        if (article is null) return Results.NotFound($"Article with ID: {articleId} not found.");
+        var mappedArticle = _mapper.Map<ArticleDto>(article);
+
+        return Results.Ok(mappedArticle);
+    }
+
     [HttpGet("plants/{plantId:guid}")]
     public async Task<IResult> GetPlantById(Guid plantId)
     {
@@ -128,6 +148,55 @@ public class DashboardController : ControllerBase
         return Results.Ok(sasToken);
     }
 
+    [HttpGet("article-header-sas-token")]
+    public IResult GetArticleHeaderImagesContainerUploadUri([FromQuery] string blobName)
+    {
+        var sasToken = _blobStorageService.GetArticleHeaderImageUploadUri(blobName, AccessTier.Hot);
+        return Results.Ok(sasToken);
+    }
+
+    [HttpPut("articles")]
+    public async Task<IResult> UpdateArticle([FromBody] ArticleEditDto articleEditDto)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user = await _userService.FindByIdAsync(Guid.Parse(userId!));
+
+        Article article;
+
+        if (articleEditDto.IsNew)
+        {
+            var newArticle = new Article
+            {
+                AuthorId = user.Id,
+                Author = user,
+                Title = articleEditDto.Title,
+                Subtitle = articleEditDto.Subtitle,
+                ShortDescription = articleEditDto.ShortDescription,
+                HeaderImageUrl = articleEditDto.HeaderImageUrl,
+                Content = articleEditDto.Content
+            };
+
+            article = await _blogService.Create(newArticle);
+        }
+        else
+        {
+            var articleToEdit = await _blogService.GetById(articleEditDto.Id);
+
+            articleToEdit.Title = articleEditDto.Title;
+            articleToEdit.Subtitle = articleEditDto.Subtitle;
+            articleToEdit.ShortDescription = articleEditDto.ShortDescription;
+            articleToEdit.HeaderImageUrl = articleEditDto.HeaderImageUrl;
+            articleToEdit.Content = articleEditDto.Content;
+            articleToEdit.LastModified = DateTime.UtcNow;
+
+            article = await _blogService.Update(articleToEdit);
+        }
+
+        var mapped = _mapper.Map<ArticleDto>(article);
+
+        return Results.Ok(mapped);
+    }
+
     [HttpPut("plants")]
     public async Task<IResult> UpdatePlant([FromBody] PlantEditDto plantDto)
     {
@@ -192,6 +261,14 @@ public class DashboardController : ControllerBase
     public async Task<IResult> DeletePlant([FromBody] string plantId)
     {
         var deleted = await _plantService.Delete(Guid.Parse(plantId));
+
+        return deleted ? Results.Ok() : Results.BadRequest();
+    }
+
+    [HttpDelete("articles")]
+    public async Task<IResult> DeleteArticle([FromBody] string articleId)
+    {
+        var deleted = await _blogService.Delete(Guid.Parse(articleId));
 
         return deleted ? Results.Ok() : Results.BadRequest();
     }

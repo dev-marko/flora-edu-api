@@ -48,7 +48,7 @@ public class PlantService : BaseService<Plant>, IPlantService
     {
         var plants = _dbContext.Set<Plant>()
             .Include(p => p.Author)
-            .Where(p => p.Author != null && p.Author.Id == user.Id);
+            .Where(p => p.Author.Id == user.Id);
 
         var plantCards = plants
             .Select(plant => new PlantCardDto
