@@ -1,4 +1,6 @@
-﻿namespace FloraEdu.Domain.DataTransferObjects.Article;
+﻿using FloraEdu.Domain.DataTransferObjects.Analytics;
+
+namespace FloraEdu.Domain.DataTransferObjects.Article;
 
 public class ArticleAnalytics
 {
@@ -10,4 +12,6 @@ public class ArticleAnalytics
     public int MostPopularByNumberOfCommentsCount { get; set; }
     public string MostPopularByUniqueVisitors { get; set; }
     public int MostPopularByUniqueVisitorsCount { get; set; }
+    public List<LikesDataDto> LikesChartData { get; set; } = new();
+    public List<BookmarksDataDto> BookmarksChartData { get; set; } = new();
 }

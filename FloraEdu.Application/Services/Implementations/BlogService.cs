@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FloraEdu.Application.Services.Interfaces;
 using FloraEdu.Domain.DataTransferObjects;
+using FloraEdu.Domain.DataTransferObjects.Analytics;
 using FloraEdu.Domain.DataTransferObjects.Article;
 using FloraEdu.Domain.Entities;
 using FloraEdu.Persistence;
@@ -305,6 +306,46 @@ public class BlogService : BaseService<Article>, IBlogService
         var res = await _dbContext.SaveChangesAsync();
 
         return res > 0;
+    }
+
+    public async Task<List<LikesDataDto>> GetArticleLikesChartData(string userId)
+    {
+        var articles = await _dbContext.Set<Article>()
+            .Include(a => a.Author)
+            .Include(a => a.Likes)
+            .Where(a => a.Author.Id == userId)
+            .ToListAsync();
+
+        var articleLikesChartData = articles.Select(p => new LikesDataDto
+            {
+                EntityId = p.Id,
+                Name = p.Title,
+                LikesCount = p.Likes.Count
+            })
+            .OrderByDescending(a => a.LikesCount)
+            .ToList();
+
+        return articleLikesChartData;
+    }
+
+    public async Task<List<BookmarksDataDto>> GetArticleBookmarksChartData(string userId)
+    {
+        var articles = await _dbContext.Set<Article>()
+            .Include(a => a.Author)
+            .Include(a => a.Bookmarks)
+            .Where(a => a.Author.Id == userId)
+            .ToListAsync();
+
+        var articleBookmarksChartData = articles.Select(p => new BookmarksDataDto
+            {
+                EntityId = p.Id,
+                Name = p.Title,
+                BookmarksCount = p.Bookmarks.Count
+            })
+            .OrderByDescending(a => a.BookmarksCount)
+            .ToList();
+
+        return articleBookmarksChartData;
     }
 
     public async Task<bool> BookmarkArticle(Article article, User user)

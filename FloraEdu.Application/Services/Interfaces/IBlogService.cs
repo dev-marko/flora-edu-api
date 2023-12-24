@@ -1,4 +1,5 @@
 ﻿using FloraEdu.Domain.DataTransferObjects;
+using FloraEdu.Domain.DataTransferObjects.Analytics;
 using FloraEdu.Domain.DataTransferObjects.Article;
 using FloraEdu.Domain.Entities;
 
@@ -27,4 +28,6 @@ public interface IBlogService
     Task<ArticleComment?> GetArticleCommentById(Guid articleCommentId);
     Task<bool> AddNewComment(User user, Guid articleId, string content);
     Task<bool> LikeArticleComment(ArticleComment articleComment, User user);
+    Task<List<LikesDataDto>> GetArticleLikesChartData(string userId);
+    Task<List<BookmarksDataDto>> GetArticleBookmarksChartData(string userId);
 }

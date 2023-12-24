@@ -1,4 +1,5 @@
 ﻿using FloraEdu.Domain.DataTransferObjects;
+using FloraEdu.Domain.DataTransferObjects.Analytics;
 using FloraEdu.Domain.DataTransferObjects.Plant;
 using FloraEdu.Domain.Entities;
 using FloraEdu.Domain.Enumerations;
@@ -25,6 +26,8 @@ public interface IPlantService : IService<Plant>
     Task<(string, int)> GetMostPopularPlantByBookmarks(string userId);
     Task<(string, int)> GetMostInteractedPlantByComments(string userId);
     Task<(string, int)> GetMostPopularPlantByUniqueVisitors(string userId);
+    Task<List<LikesDataDto>> GetPlantLikesChartData(string userId);
+    Task<List<BookmarksDataDto>> GetPlantBookmarksChartData(string userId);
 
     // Plant Comments
     Task<PlantComment?> GetPlantCommentById(Guid plantCommentId);

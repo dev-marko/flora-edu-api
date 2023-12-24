@@ -64,6 +64,8 @@ public class DashboardController : ControllerBase
         var mostPopularByBookmarks = await _plantService.GetMostPopularPlantByBookmarks(userId);
         var mostPopularByNumberOfComments = await _plantService.GetMostInteractedPlantByComments(userId);
         var mostPopularByUniqueVisitors = await _plantService.GetMostPopularPlantByUniqueVisitors(userId);
+        var plantLikesChartData = await _plantService.GetPlantLikesChartData(userId);
+        var plantBookmarksChartData = await _plantService.GetPlantBookmarksChartData(userId);
 
         var plantAnalytics = new PlantAnalytics
         {
@@ -74,7 +76,9 @@ public class DashboardController : ControllerBase
             MostPopularByNumberOfComments = mostPopularByNumberOfComments.Item1,
             MostPopularByNumberOfCommentsCount = mostPopularByNumberOfComments.Item2,
             MostPopularByUniqueVisitors = mostPopularByUniqueVisitors.Item1,
-            MostPopularByUniqueVisitorsCount = mostPopularByUniqueVisitors.Item2
+            MostPopularByUniqueVisitorsCount = mostPopularByUniqueVisitors.Item2,
+            LikesChartData = plantLikesChartData,
+            BookmarksChartData = plantBookmarksChartData
         };
 
         return Results.Ok(plantAnalytics);
@@ -90,6 +94,8 @@ public class DashboardController : ControllerBase
         var mostPopularByBookmarks = await _blogService.GetMostPopularArticleByBookmarks(userId);
         var mostPopularByNumberOfComments = await _blogService.GetMostInteractedArticleByComments(userId);
         var mostPopularByUniqueVisitors = await _blogService.GetMostPopularArticleByUniqueVisitors(userId);
+        var articleLikesChartData = await _blogService.GetArticleLikesChartData(userId);
+        var articleBookmarksChartData = await _blogService.GetArticleBookmarksChartData(userId);
 
         var articleAnalytics = new ArticleAnalytics
         {
@@ -100,7 +106,9 @@ public class DashboardController : ControllerBase
             MostPopularByNumberOfComments = mostPopularByNumberOfComments.Item1,
             MostPopularByNumberOfCommentsCount = mostPopularByNumberOfComments.Item2,
             MostPopularByUniqueVisitors = mostPopularByUniqueVisitors.Item1,
-            MostPopularByUniqueVisitorsCount = mostPopularByUniqueVisitors.Item2
+            MostPopularByUniqueVisitorsCount = mostPopularByUniqueVisitors.Item2,
+            LikesChartData = articleLikesChartData,
+            BookmarksChartData = articleBookmarksChartData
         };
 
         return Results.Ok(articleAnalytics);

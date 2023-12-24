@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FloraEdu.Application.Services.Interfaces;
 using FloraEdu.Domain.DataTransferObjects;
+using FloraEdu.Domain.DataTransferObjects.Analytics;
 using FloraEdu.Domain.DataTransferObjects.Plant;
 using FloraEdu.Domain.Entities;
 using FloraEdu.Domain.Enumerations;
@@ -243,6 +244,46 @@ public class PlantService : BaseService<Plant>, IPlantService
         var mapped = _mapper.Map<PlantDto>(plant);
 
         return (mapped.Name!, mapped.VisitorsCount);
+    }
+
+    public async Task<List<LikesDataDto>> GetPlantLikesChartData(string userId)
+    {
+        var plants = await _dbContext.Set<Plant>()
+            .Include(p => p.Author)
+            .Include(p => p.Likes)
+            .Where(a => a.Author.Id == userId)
+            .ToListAsync();
+
+        var plantLikesChartData = plants.Select(p => new LikesDataDto
+            {
+                EntityId = p.Id,
+                Name = p.Name,
+                LikesCount = p.Likes.Count
+            })
+            .OrderByDescending(p => p.LikesCount)
+            .ToList();
+
+        return plantLikesChartData;
+    }
+
+    public async Task<List<BookmarksDataDto>> GetPlantBookmarksChartData(string userId)
+    {
+        var plants = await _dbContext.Set<Plant>()
+            .Include(p => p.Author)
+            .Include(p => p.Bookmarks)
+            .Where(a => a.Author.Id == userId)
+            .ToListAsync();
+
+        var plantBookmarksChartData = plants.Select(p => new BookmarksDataDto
+            {
+                EntityId = p.Id,
+                Name = p.Name,
+                BookmarksCount = p.Bookmarks.Count
+            })
+            .OrderByDescending(p => p.BookmarksCount)
+            .ToList();
+
+        return plantBookmarksChartData;
     }
 
     public async Task<bool> BookmarkPlant(Plant plant, User user)
