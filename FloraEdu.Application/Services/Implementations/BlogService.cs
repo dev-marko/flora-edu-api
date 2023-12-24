@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FloraEdu.Application.Services.Interfaces;
 using FloraEdu.Domain.DataTransferObjects;
+using FloraEdu.Domain.DataTransferObjects.Analytics;
 using FloraEdu.Domain.DataTransferObjects.Article;
 using FloraEdu.Domain.Entities;
 using FloraEdu.Persistence;
@@ -11,6 +12,7 @@ namespace FloraEdu.Application.Services.Implementations;
 
 public class BlogService : BaseService<Article>, IBlogService
 {
+    private readonly object _registerUniqueUserLock = new();
     private readonly ApplicationDbContext _dbContext;
     private readonly IMapper _mapper;
     private readonly ILogger<Article> _logger;
@@ -106,6 +108,144 @@ public class BlogService : BaseService<Article>, IBlogService
         return articleDtos;
     }
 
+    public void RegisterUniqueVisitor(Guid uuaid, Guid articleId, string? userId = null)
+    {
+        lock (_registerUniqueUserLock)
+        {
+            var articleVisitors = _dbContext.Set<UniqueArticleVisitor>();
+            var userAlreadyRegistered = articleVisitors.Any(a => a.UserId == userId || a.UUAID == uuaid);
+
+            if (userAlreadyRegistered)
+            {
+                return;
+            }
+
+            var newUniqueVisitor = new UniqueArticleVisitor
+            {
+                UUAID = uuaid,
+                ArticleId = articleId,
+                UserId = userId,
+                IsAnonymous = userId is null
+            };
+
+            articleVisitors.Add(newUniqueVisitor);
+
+            _dbContext.SaveChanges();
+        }
+    }
+
+    public async Task<(string, int)> GetMostPopularArticleByLikes(string userId)
+    {
+        var articles = await _dbContext.Set<Article>()
+            .Include(a => a.Author)
+            .Include(a => a.UniqueVisitors)
+            .Include(a => a.Likes)
+            .Include(a => a.Bookmarks)
+            .Include(a => a.Comments)
+            .ThenInclude(ac => ac.User)
+            .Include(a => a.Comments.OrderByDescending(c => c.CreatedAt))
+            .ThenInclude(ac => ac.Likes)
+            .Where(a => a.Author.Id == userId)
+            .ToListAsync();
+
+        if (articles.Count == 0)
+        {
+            return (string.Empty, 0);
+        }
+
+        var article = articles
+            .OrderByDescending(a => a.Likes.Count)
+            .First();
+
+        var mapped = _mapper.Map<ArticleDto>(article);
+
+        return (mapped.Title!, mapped.LikeCount);
+    }
+
+    public async Task<(string, int)> GetMostPopularArticleByBookmarks(string userId)
+    {
+        var articles = await _dbContext.Set<Article>()
+            .Include(a => a.Author)
+            .Include(a => a.UniqueVisitors)
+            .Include(a => a.Likes)
+            .Include(a => a.Bookmarks)
+            .Include(a => a.Comments)
+            .ThenInclude(ac => ac.User)
+            .Include(a => a.Comments.OrderByDescending(c => c.CreatedAt))
+            .ThenInclude(ac => ac.Likes)
+            .Where(a => a.Author.Id == userId)
+            .ToListAsync();
+
+        if (articles.Count == 0)
+        {
+            return (string.Empty, 0);
+        }
+
+        var article = articles
+            .OrderByDescending(a => a.Bookmarks.Count)
+            .First();
+
+        var mapped = _mapper.Map<ArticleDto>(article);
+
+        return (mapped.Title!, mapped.BookmarkCount);
+    }
+
+    public async Task<(string, int)> GetMostInteractedArticleByComments(string userId)
+    {
+        var articles = await _dbContext.Set<Article>()
+            .Include(a => a.Author)
+            .Include(a => a.UniqueVisitors)
+            .Include(a => a.Likes)
+            .Include(a => a.Bookmarks)
+            .Include(a => a.Comments)
+            .ThenInclude(ac => ac.User)
+            .Include(a => a.Comments.OrderByDescending(c => c.CreatedAt))
+            .ThenInclude(ac => ac.Likes)
+            .Where(a => a.Author.Id == userId)
+            .ToListAsync();
+
+        if (articles.Count == 0)
+        {
+            return (string.Empty, 0);
+        }
+
+        var article = articles
+            .OrderByDescending(a => a.Comments.Count)
+            .First();
+
+        var mapped = _mapper.Map<ArticleDto>(article);
+
+        return (mapped.Title!, mapped.CommentCount);
+    }
+
+    public async Task<(string, int)> GetMostPopularArticleByUniqueVisitors(string userId)
+    {
+        var articles = await _dbContext.Set<Article>()
+            .Include(a => a.Author)
+            .Include(a => a.UniqueVisitors)
+            .Include(a => a.Likes)
+            .Include(a => a.Bookmarks)
+            .Include(a => a.Comments)
+            .ThenInclude(ac => ac.User)
+            .Include(a => a.Comments.OrderByDescending(c => c.CreatedAt))
+            .ThenInclude(ac => ac.Likes)
+            .Where(a => a.Author.Id == userId)
+            .ToListAsync();
+
+        if (articles.Count == 0)
+        {
+            return (string.Empty, 0);
+        }
+
+        var article = articles
+            .OrderByDescending(a => a.UniqueVisitors.Count)
+            .First();
+
+        var mapped = _mapper.Map<ArticleDto>(article);
+
+        return (mapped.Title!, mapped.VisitorsCount);
+    }
+
     public async Task<ArticleComment?> GetArticleCommentById(Guid articleCommentId)
     {
         var articleComment = await _dbContext.Set<ArticleComment>()
@@ -166,6 +306,73 @@ public class BlogService : BaseService<Article>, IBlogService
         var res = await _dbContext.SaveChangesAsync();
 
         return res > 0;
+    }
+
+    public async Task<List<LikesDataDto>> GetArticleLikesChartData(string userId)
+    {
+        var articles = await _dbContext.Set<Article>()
+            .Include(a => a.Author)
+            .Include(a => a.Likes)
+            .Where(a => a.Author.Id == userId)
+            .ToListAsync();
+
+        var articleLikesChartData = articles.Select(p => new LikesDataDto
+            {
+                EntityId = p.Id,
+                Name = p.Title,
+                LikesCount = p.Likes.Count
+            })
+            .OrderByDescending(a => a.LikesCount)
+            .ToList();
+
+        return articleLikesChartData;
+    }
+
+    public async Task<List<BookmarksDataDto>> GetArticleBookmarksChartData(string userId)
+    {
+        var articles = await _dbContext.Set<Article>()
+            .Include(a => a.Author)
+            .Include(a => a.Bookmarks)
+            .Where(a => a.Author.Id == userId)
+            .ToListAsync();
+
+        var articleBookmarksChartData = articles.Select(p => new BookmarksDataDto
+            {
+                EntityId = p.Id,
+                Name = p.Title,
+                BookmarksCount = p.Bookmarks.Count
+            })
+            .OrderByDescending(a => a.BookmarksCount)
+            .ToList();
+
+        return articleBookmarksChartData;
+    }
+
+    public async Task<PagedList<ArticleDto>> GetArticlesByCreator(User user, int page, int pageSize)
+    {
+        var articles = _dbContext.Set<Article>().Include(a => a.Author)
+            .Where(a => a.Author.Id == user.Id);
+
+
+        var articleDtos = articles
+            .Select(article => new ArticleDto
+            {
+                Id = article.Id,
+                Title = article.Title,
+                Subtitle = article.Subtitle,
+                ShortDescription = article.ShortDescription,
+                HeaderImageUrl = article.HeaderImageUrl,
+                Content = article.Content,
+                CreatedAt = article.CreatedAt,
+                LastModified = article.LastModified,
+                IsBookmarked = false,
+                IsLiked = false
+            })
+            .OrderByDescending(a => a.LastModified);
+
+        var articleDtosPagedList = await PagedList<ArticleDto>.CreateAsync(articleDtos, page, pageSize);
+
+        return articleDtosPagedList;
     }
 
     public async Task<bool> BookmarkArticle(Article article, User user)

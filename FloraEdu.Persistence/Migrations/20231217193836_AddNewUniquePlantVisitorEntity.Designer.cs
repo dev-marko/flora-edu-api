@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using FloraEdu.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FloraEdu.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231217193836_AddNewUniquePlantVisitorEntity")]
+    partial class AddNewUniquePlantVisitorEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -360,20 +363,17 @@ namespace FloraEdu.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UniqueArticleVisitors", (string)null);
+                    b.ToTable("UniquePlantVisitors", (string)null);
                 });
 
             modelBuilder.Entity("FloraEdu.Domain.Entities.UniquePlantVisitor", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuid_generate_v4()");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("now() at time zone 'utc'");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
@@ -382,14 +382,10 @@ namespace FloraEdu.Persistence.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
+                        .HasColumnType("boolean");
 
                     b.Property<DateTime>("LastModified")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("now() at time zone 'utc'");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("PlantId")
                         .HasColumnType("uuid");
@@ -406,7 +402,7 @@ namespace FloraEdu.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UniquePlantVisitors", (string)null);
+                    b.ToTable("UniquePlantVisitor");
                 });
 
             modelBuilder.Entity("FloraEdu.Domain.Entities.User", b =>

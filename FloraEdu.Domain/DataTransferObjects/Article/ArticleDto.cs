@@ -14,4 +14,5 @@ public class ArticleDto : BaseDto
     public int BookmarkCount { get; set; }
     public List<ArticleCommentDto> Comments { get; set; } = new();
     public int CommentCount { get; set; }
+    public int VisitorsCount { get; set; }
 }

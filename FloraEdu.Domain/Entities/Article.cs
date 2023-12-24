@@ -12,4 +12,5 @@ public class Article : BaseEntity
     public List<ArticleComment> Comments { get; set; } = new();
     public List<User> Likes { get; set; } = new();
     public List<User> Bookmarks { get; set; } = new();
+    public List<UniqueArticleVisitor> UniqueVisitors { get; set; } = new();
 }

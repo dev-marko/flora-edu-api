@@ -15,6 +15,7 @@ namespace FloraEdu.Web.Controllers;
 [Route("[controller]")]
 public class ArticlesController : ControllerBase
 {
+    private readonly object _registerUniqueUserLock = new();
     private readonly IBlogService _blogService;
     private readonly IUserService _userService;
     private readonly IUserFeaturesService _userFeaturesService;
@@ -184,5 +185,14 @@ public class ArticlesController : ControllerBase
         var res = await _blogService.LikeArticleComment(articleComment, user);
 
         return res ? Results.Ok() : Results.BadRequest();
+    }
+
+    [HttpPost("register-unique-visitor")]
+    public IResult RegisterUniqueVisitor([FromBody] UniqueVisitorDto uniqueVisitorDto)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        _blogService.RegisterUniqueVisitor(uniqueVisitorDto.UUAID, uniqueVisitorDto.EntityId, userId);
+
+        return Results.Ok();
     }
 }

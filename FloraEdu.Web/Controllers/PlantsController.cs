@@ -41,10 +41,6 @@ public class PlantsController : ControllerBase
         if (userId is not null)
         {
             user = await _userService.FindByIdAsync(Guid.Parse(userId));
-            var test = await _plantService.GetMostPopularPlantByLikes(userId);
-            var test2 = await _plantService.GetMostPopularPlantByBookmarks(userId);
-            var test3 = await _plantService.GetMostInteractedPlantByComments(userId);
-            var test4 = await _plantService.GetMostPopularPlantsGlobally(3, user);
         }
 
         Enum.TryParse(requestDto.Type, out PlantType type);
@@ -104,6 +100,9 @@ public class PlantsController : ControllerBase
         if (plant is null) return Results.NotFound($"Plant with ID: {plantId} not found.");
         var mappedPlant = _mapper.Map<PlantDto>(plant);
 
+        mappedPlant.ThumbnailImageUrl = plant.PlantImage?.ThumbnailImageUrl;
+        mappedPlant.HeaderImageUrls = plant.PlantImage?.HeaderImageUrls!;
+
         if (userId is null)
         {
             return Results.Ok(mappedPlant);
@@ -128,6 +127,8 @@ public class PlantsController : ControllerBase
         plantDto.LikeCount = plant.Likes.Count;
         plantDto.IsLiked = plant.Likes.Contains(user);
         plantDto.IsBookmarked = plant.Bookmarks.Contains(user);
+        plantDto.ThumbnailImageUrl = plant.PlantImage?.ThumbnailImageUrl;
+        plantDto.HeaderImageUrls = plant.PlantImage?.HeaderImageUrls!;
 
         return Results.Ok(plantDto);
     }
@@ -192,5 +193,14 @@ public class PlantsController : ControllerBase
         var res = await _plantService.LikePlantComment(plantComment, user);
 
         return res ? Results.Ok() : Results.BadRequest();
+    }
+    
+    [HttpPost("register-unique-visitor")]
+    public IResult RegisterUniqueVisitor([FromBody] UniqueVisitorDto uniqueVisitorDto)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        _plantService.RegisterUniqueVisitor(uniqueVisitorDto.UUAID, uniqueVisitorDto.EntityId, userId);
+
+        return Results.Ok();
     }
 }
