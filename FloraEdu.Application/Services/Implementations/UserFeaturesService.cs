@@ -55,6 +55,8 @@ public class UserFeaturesService : IUserFeaturesService
                 p.Description.Contains(searchTerm)).ToList();
         }
 
+        var plantImagesObject = _dbContext.Set<PlantImage>().ToList();
+
         var plantCards = plants
             .Select(plant => new PlantCardDto
             {
@@ -62,6 +64,7 @@ public class UserFeaturesService : IUserFeaturesService
                 Name = plant.Name,
                 Type = plant.Type.ToString(),
                 Description = plant.Description,
+                ThumbnailImageUrl = plantImagesObject.First(pi => pi.PlantId == plant.Id).ThumbnailImageUrl,
                 CreatedAt = plant.CreatedAt,
                 LastModified = plant.LastModified,
                 IsBookmarked = CheckIfPlantIsBookmarked(plant, user),

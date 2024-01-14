@@ -33,12 +33,10 @@ public class JwtProvider : IJwtProvider
         };
 
         var existingClaims = await GetExistingUserAndRoleClaims(user);
-
         claims.AddRange(existingClaims);
-
-        var signingCredentials
-            = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey)),
-                SecurityAlgorithms.HmacSha256);
+        
+        var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
+        var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
             issuer: _jwtOptions.Issuer,
