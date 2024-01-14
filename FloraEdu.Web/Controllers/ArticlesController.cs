@@ -15,7 +15,6 @@ namespace FloraEdu.Web.Controllers;
 [Route("[controller]")]
 public class ArticlesController : ControllerBase
 {
-    private readonly object _registerUniqueUserLock = new();
     private readonly IBlogService _blogService;
     private readonly IUserService _userService;
     private readonly IUserFeaturesService _userFeaturesService;
@@ -70,12 +69,7 @@ public class ArticlesController : ControllerBase
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        if (userId is null)
-        {
-            return Results.Unauthorized();
-        }
-
-        var user = await _userFeaturesService.GetUser(userId);
+        var user = await _userFeaturesService.GetUser(userId!);
 
         if (user is null)
         {

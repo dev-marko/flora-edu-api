@@ -121,6 +121,7 @@ public class PlantService : BaseService<Plant>, IPlantService
                 Name = plant.Name,
                 Type = plant.Type.ToString(),
                 Description = plant.Description,
+                ThumbnailImageUrl = plant.PlantImage!.ThumbnailImageUrl,
                 CreatedAt = plant.CreatedAt,
                 LastModified = plant.LastModified,
                 IsBookmarked = CheckIfPlantIsBookmarked(plant, user),
